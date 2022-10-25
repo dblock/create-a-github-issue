@@ -1,3 +1,7 @@
+### 3.1.2 (Next)
+
+* Your contribution here.
+
 ### 3.1.1 (2022/10/25)
 
 * [#29](https://github.com/dblock/create-a-github-issue/pull/29): Added RELEADING.md - [@dblock](https://github.com/dblock).

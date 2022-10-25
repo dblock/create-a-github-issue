@@ -21,17 +21,24 @@ Remove the line with "Your contribution here.", since there will be no more cont
 Commit your changes and create a tag.
 
 ```
-git add CHANGELOG.md
+git add CHANGELOG.md package.json
 git commit -m "Preparing for release, 3.1.0."
 git tag v3.1.0
 git push origin main --tags
 ```
 
+Create [a new release on GitHub](https://github.com/dblock/create-a-github-issue/releases/new) from a tag.
 This will trigger [a release publish workflow](.github/workflows/publish.yml) and make the release.
 
 ### Prepare for the Next Development Iteration
 
-Add the next patch release number per semver to [CHANGELOG.md](CHANGELOG.md).
+Per semver, increment the minor version in [package.json](package.json).
+
+```
+"version": "3.1.1"
+```
+
+Add the next release number to [CHANGELOG.md](CHANGELOG.md).
 
 ```
 ### 3.1.1 (Next)
@@ -43,7 +50,7 @@ Add the next patch release number per semver to [CHANGELOG.md](CHANGELOG.md).
 Commit your changes.
 
 ```
-git add CHANGELOG.md
+git add package.json CHANGELOG.md
 git commit -m "Preparing for next development iteration, 3.1.1."
 git push origin main
 ```
