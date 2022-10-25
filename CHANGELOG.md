@@ -2,6 +2,7 @@
 
 * Your contribution here.
 * [#4](https://github.com/dblock/create-a-github-issue/pull/4): Inserted missing space between `${searchExistingType}` and `issues` - [@PF4Public](https://github.com/PF4Public).
+* [#11](https://github.com/dblock/create-a-github-issue/pull/11): Configure Renovate - [@dblock](https://github.com/dblock).
 
 ### 3.0 (12/3/2021)
 
