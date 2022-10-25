@@ -2,8 +2,9 @@
 
 * Your contribution here.
 * [#4](https://github.com/dblock/create-a-github-issue/pull/4): Inserted missing space between `${searchExistingType}` and `issues` - [@PF4Public](https://github.com/PF4Public).
-* [#11](https://github.com/dblock/create-a-github-issue/pull/11): Configure Renovate - [@dblock](https://github.com/dblock).
+* [#11](https://github.com/dblock/create-a-github-issue/pull/11): Configured Renovate - [@dblock](https://github.com/dblock).
 * [#15](https://github.com/dblock/create-a-github-issue/pull/15): Added CHANGELOG verifier CI - [@dblock](https://github.com/dblock).
+* [#28](https://github.com/dblock/create-a-github-issue/pull/28): Upgraded to Node 16 - [@dblock](https://github.com/dblock).
 
 ### 3.0 (12/3/2021)
 
