@@ -1,7 +1,7 @@
 name: Create a GitHub Issue
 description: Creates a new GitHub issue using a template.
 runs:
-  using: node12
+  using: node16
   main: dist/index.js
 branding:
   icon: alert-circle

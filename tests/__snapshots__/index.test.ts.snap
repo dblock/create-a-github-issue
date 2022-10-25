@@ -243,13 +243,6 @@ Array [
   Array [
     [HttpError: Validation error: {"foo":true}],
   ],
-  Array [
-    Array [
-      Object {
-        "foo": true,
-      },
-    ],
-  ],
 ]
 `;
 
@@ -260,13 +253,6 @@ Array [
   ],
   Array [
     [HttpError: Validation error: {"foo":true}],
-  ],
-  Array [
-    Array [
-      Object {
-        "foo": true,
-      },
-    ],
   ],
 ]
 `;
