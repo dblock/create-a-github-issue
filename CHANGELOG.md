@@ -1,3 +1,7 @@
+### 3.1.1 (Next)
+
+* Your contribution here.
+
 ### 3.1.0 (2022/10/25)
 
 * [#4](https://github.com/dblock/create-a-github-issue/pull/4): Inserted missing space between `${searchExistingType}` and `issues` - [@PF4Public](https://github.com/PF4Public).
