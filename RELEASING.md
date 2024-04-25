@@ -7,6 +7,7 @@ There're no hard rules about when to release this project. Release bug fixes fre
 Run tests, check that all tests succeed locally.
 
 ```
+npm install
 npm run test
 ```
 
@@ -21,7 +22,7 @@ Remove the line with "Your contribution here.", since there will be no more cont
 Commit your changes and create a tag.
 
 ```
-git add CHANGELOG.md package.json
+git add CHANGELOG.md
 git commit -m "Preparing for release, 3.1.0."
 git tag v3.1.0
 git push origin main --tags
@@ -42,7 +43,6 @@ Add the next release number to [CHANGELOG.md](CHANGELOG.md).
 
 ```
 ### 3.1.1 (Next)
-================
 
 * Your contribution here.
 ```
@@ -50,7 +50,8 @@ Add the next release number to [CHANGELOG.md](CHANGELOG.md).
 Commit your changes.
 
 ```
-git add package.json CHANGELOG.md
+npm install
+git add package.json package-lock.json CHANGELOG.md
 git commit -m "Preparing for next development iteration, 3.1.1."
 git push origin main
 ```
