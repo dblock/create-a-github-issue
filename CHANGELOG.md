@@ -1,6 +1,5 @@
-### 3.2.0 (Next)
+### 3.2.0 (2024/04/25)
 
-* Your contribution here.
 * [#123](https://github.com/dblock/create-a-github-issue/pull/123): Update action to run on node20 - [@pkwarren](https://github.com/pkwarren).
 
 ### 3.1.1 (2022/10/25)
