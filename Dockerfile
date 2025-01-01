@@ -1,4 +1,4 @@
-FROM node:21-alpine
+FROM node:22-alpine
 
 LABEL "com.github.actions.name"="Create an issue"
 LABEL "com.github.actions.description"="Creates a new issue using a template with front matter."
