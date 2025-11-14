@@ -22,11 +22,11 @@
     "@tsconfig/recommended": "^1.0.3",
     "@types/jest": "30.0.0",
     "@types/nunjucks": "3.2.6",
-    "@vercel/ncc": "0.38.3",
-    "jest": "30.0.4",
-    "nock": "14.0.5",
-    "ts-jest": "29.4.0",
-    "typescript": "5.8.3"
+    "@vercel/ncc": "0.38.4",
+    "jest": "30.2.0",
+    "nock": "14.0.10",
+    "ts-jest": "29.4.5",
+    "typescript": "5.9.3"
   },
   "jest": {
     "testEnvironment": "node",
