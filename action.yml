@@ -8,9 +8,8 @@ branding:
   color: gray-dark
 inputs:
   github-token:
-    description: GitHub token for authentication. Use ${{ secrets.GITHUB_TOKEN }} or a PAT.
-    required: true
-    default: ${{ github.token }}
+    description: GitHub token for authentication. Defaults to the workflow's GITHUB_TOKEN.
+    required: false
   assignees:
     description: GitHub handle of the user(s) to assign the issue (comma-separated).
     required: false

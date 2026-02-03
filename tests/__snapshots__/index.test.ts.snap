@@ -92,7 +92,7 @@ exports[`create-a-github-issue creates a new issue with assignees and labels as 
     "JasonEtco",
     "matchai",
   ],
-  "body": "The action  is the best action.",
+  "body": "The action create-a-github-issue is the best action.",
   "labels": [
     "bug",
     "enhancement",
@@ -109,7 +109,7 @@ exports[`create-a-github-issue creates a new issue with assignees, labels and a 
   "assignees": [
     "JasonEtco",
   ],
-  "body": "The action  is the best action.",
+  "body": "The action create-a-github-issue is the best action.",
   "labels": [
     "bugs",
     "foo",
@@ -139,7 +139,7 @@ exports[`create-a-github-issue creates a new issue with multiple assignees passe
 exports[`create-a-github-issue creates a new issue with some template variables 1`] = `
 {
   "assignees": [],
-  "body": "The action  is the best action.
+  "body": "The action create-a-github-issue is the best action.
 
 Environment variable foo is great.
 ",
@@ -147,7 +147,7 @@ Environment variable foo is great.
   "milestone": undefined,
   "owner": "JasonEtco",
   "repo": "waddup",
-  "title": "Hello ",
+  "title": "Hello create-a-github-issue",
 }
 `;
 

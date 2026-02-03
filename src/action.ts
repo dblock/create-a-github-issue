@@ -24,7 +24,7 @@ function logError(template: string, action: 'creating' | 'updating', err: any) {
 export async function createAnIssue () {
   const template = core.getInput('filename') || '.github/ISSUE_TEMPLATE.md'
   const assignees = core.getInput('assignees')
-  const token = core.getInput('github-token', { required: true })
+  const token = core.getInput('github-token') || process.env.GITHUB_TOKEN || ''
   
   const octokit = github.getOctokit(token)
   const context = github.context
@@ -55,7 +55,8 @@ export async function createAnIssue () {
     ...context,
     repo: context.repo,
     env: process.env,
-    date: Date.now()
+    date: Date.now(),
+    action: process.env.GITHUB_ACTION
   }
 
   // Get the file - use GITHUB_WORKSPACE if available
