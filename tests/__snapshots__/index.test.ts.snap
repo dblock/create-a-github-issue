@@ -1,46 +1,15 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`create-a-github-issue checks the value of search_existing 1`] = `
-{
-  "assignees": [
-    "octocat",
-    "JasonEtco",
-  ],
-  "body": "Goodbye!",
-  "labels": [],
-  "milestone": 1,
-  "title": "Hello!",
-}
-`;
-
-exports[`create-a-github-issue checks the value of update_existing 1`] = `
-{
-  "assignees": [
-    "octocat",
-    "JasonEtco",
-  ],
-  "body": "Goodbye!",
-  "labels": [],
-  "milestone": 1,
-  "title": "Hello!",
-}
-`;
-
 exports[`create-a-github-issue creates a new issue 1`] = `
 {
   "assignees": [],
   "body": "Goodbye!",
   "labels": [],
+  "milestone": undefined,
+  "owner": "JasonEtco",
+  "repo": "waddup",
   "title": "Hello!",
 }
-`;
-
-exports[`create-a-github-issue creates a new issue 2`] = `
-[
-  [
-    "Created issue Hello!#1: www",
-  ],
-]
 `;
 
 exports[`create-a-github-issue creates a new issue from a different template 1`] = `
@@ -48,40 +17,33 @@ exports[`create-a-github-issue creates a new issue from a different template 1`]
   "assignees": [],
   "body": "Goodbye!",
   "labels": [],
+  "milestone": undefined,
+  "owner": "JasonEtco",
+  "repo": "waddup",
   "title": "Different file",
 }
 `;
 
-exports[`create-a-github-issue creates a new issue from a different template 2`] = `
-[
-  [
-    "Created issue Different file#1: www",
-  ],
-]
-`;
-
 exports[`create-a-github-issue creates a new issue when updating existing issues is enabled but no issues with the same title exist 1`] = `
 {
-  "assignees": [
-    "octocat",
-    "JasonEtco",
-  ],
+  "assignees": [],
   "body": "Goodbye!",
   "labels": [],
-  "milestone": 1,
+  "milestone": undefined,
+  "owner": "JasonEtco",
+  "repo": "waddup",
   "title": "Hello!",
 }
 `;
 
 exports[`create-a-github-issue creates a new issue with a milestone passed by input 1`] = `
 {
-  "assignees": [
-    "octocat",
-    "JasonEtco",
-  ],
+  "assignees": [],
   "body": "Goodbye!",
   "labels": [],
   "milestone": 1,
+  "owner": "JasonEtco",
+  "repo": "waddup",
   "title": "Hello!",
 }
 `;
@@ -93,16 +55,11 @@ exports[`create-a-github-issue creates a new issue with an assignee passed by in
   ],
   "body": "Goodbye!",
   "labels": [],
+  "milestone": undefined,
+  "owner": "JasonEtco",
+  "repo": "waddup",
   "title": "Hello!",
 }
-`;
-
-exports[`create-a-github-issue creates a new issue with an assignee passed by input 2`] = `
-[
-  [
-    "Created issue Hello!#1: www",
-  ],
-]
 `;
 
 exports[`create-a-github-issue creates a new issue with assignees and labels as comma-delimited strings 1`] = `
@@ -116,16 +73,11 @@ exports[`create-a-github-issue creates a new issue with assignees and labels as 
     "bug",
     "enhancement",
   ],
+  "milestone": undefined,
+  "owner": "JasonEtco",
+  "repo": "waddup",
   "title": "DO EVERYTHING",
 }
-`;
-
-exports[`create-a-github-issue creates a new issue with assignees and labels as comma-delimited strings 2`] = `
-[
-  [
-    "Created issue DO EVERYTHING#1: www",
-  ],
-]
 `;
 
 exports[`create-a-github-issue creates a new issue with assignees, labels and a milestone 1`] = `
@@ -139,16 +91,10 @@ exports[`create-a-github-issue creates a new issue with assignees, labels and a 
     "foo",
   ],
   "milestone": 2,
+  "owner": "JasonEtco",
+  "repo": "waddup",
   "title": "DO EVERYTHING foo",
 }
-`;
-
-exports[`create-a-github-issue creates a new issue with assignees, labels and a milestone 2`] = `
-[
-  [
-    "Created issue DO EVERYTHING foo#1: www",
-  ],
-]
 `;
 
 exports[`create-a-github-issue creates a new issue with multiple assignees passed by input 1`] = `
@@ -159,16 +105,11 @@ exports[`create-a-github-issue creates a new issue with multiple assignees passe
   ],
   "body": "Goodbye!",
   "labels": [],
+  "milestone": undefined,
+  "owner": "JasonEtco",
+  "repo": "waddup",
   "title": "Hello!",
 }
-`;
-
-exports[`create-a-github-issue creates a new issue with multiple assignees passed by input 2`] = `
-[
-  [
-    "Created issue Hello!#1: www",
-  ],
-]
 `;
 
 exports[`create-a-github-issue creates a new issue with some template variables 1`] = `
@@ -179,16 +120,11 @@ exports[`create-a-github-issue creates a new issue with some template variables 
 Environment variable foo is great.
 ",
   "labels": [],
+  "milestone": undefined,
+  "owner": "JasonEtco",
+  "repo": "waddup",
   "title": "Hello create-a-github-issue",
 }
-`;
-
-exports[`create-a-github-issue creates a new issue with some template variables 2`] = `
-[
-  [
-    "Created issue Hello create-a-github-issue#1: www",
-  ],
-]
 `;
 
 exports[`create-a-github-issue creates a new issue with the context.repo template variables 1`] = `
@@ -199,73 +135,9 @@ exports[`create-a-github-issue creates a new issue with the context.repo templat
 Just click this link! https://JasonEtco.github.io/waddup/path/to/my/pageindex.html
 ",
   "labels": [],
+  "milestone": undefined,
+  "owner": "JasonEtco",
+  "repo": "waddup",
   "title": "This Issue has a generalizable GitHub Pages Link",
-}
-`;
-
-exports[`create-a-github-issue creates a new issue with the context.repo template variables 2`] = `
-[
-  [
-    "Created issue This Issue has a generalizable GitHub Pages Link#1: www",
-  ],
-]
-`;
-
-exports[`create-a-github-issue finds, but does not update an existing issue with the same title 1`] = `
-{
-  "assignees": [
-    "octocat",
-    "JasonEtco",
-  ],
-  "body": "Goodbye!",
-  "labels": [],
-  "milestone": 1,
-  "title": "Hello!",
-}
-`;
-
-exports[`create-a-github-issue logs a helpful error if creating an issue throws an error 1`] = `
-[
-  [
-    "An error occurred while creating the issue. This might be caused by a malformed issue title, or a typo in the labels or assignees. Check .github/ISSUE_TEMPLATE.md!",
-  ],
-  [
-    [HttpError: Validation error],
-  ],
-]
-`;
-
-exports[`create-a-github-issue logs a helpful error if creating an issue throws an error with more errors 1`] = `
-[
-  [
-    "An error occurred while creating the issue. This might be caused by a malformed issue title, or a typo in the labels or assignees. Check .github/ISSUE_TEMPLATE.md!",
-  ],
-  [
-    [HttpError: Validation error: {"foo":true}],
-  ],
-]
-`;
-
-exports[`create-a-github-issue logs a helpful error if updating an issue throws an error with more errors 1`] = `
-[
-  [
-    "An error occurred while updating the issue. This might be caused by a malformed issue title, or a typo in the labels or assignees. Check .github/ISSUE_TEMPLATE.md!",
-  ],
-  [
-    [HttpError: Validation error: {"foo":true}],
-  ],
-]
-`;
-
-exports[`create-a-github-issue updates an existing open issue with the same title 1`] = `
-{
-  "assignees": [
-    "octocat",
-    "JasonEtco",
-  ],
-  "body": "Goodbye!",
-  "labels": [],
-  "milestone": 1,
-  "title": "Hello!",
 }
 `;
