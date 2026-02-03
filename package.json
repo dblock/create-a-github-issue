@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "@actions/core": "3.0",
-    "actions-toolkit": "6.0.1",
+    "@actions/github": "^6.0.1",
     "front-matter": "4.0.2",
     "js-yaml": "4.1.1",
     "nunjucks": "3.2.4",
@@ -25,13 +25,14 @@
     "@types/nunjucks": "3.2.6",
     "@vercel/ncc": "0.38.4",
     "jest": "30.2.0",
-    "nock": "14.0.10",
     "ts-jest": "29.4.6",
     "typescript": "5.9.3"
   },
   "jest": {
     "testEnvironment": "node",
-    "extensionsToTreatAsEsm": [".ts"],
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ],
     "setupFiles": [
       "<rootDir>/tests/setup.ts"
     ],
@@ -41,7 +42,12 @@
       "json"
     ],
     "transform": {
-      ".+\\.tsx?$": ["ts-jest", { "useESM": true }]
+      ".+\\.tsx?$": [
+        "ts-jest",
+        {
+          "useESM": true
+        }
+      ]
     }
   }
 }
