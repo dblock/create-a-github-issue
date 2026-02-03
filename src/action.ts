@@ -1,42 +1,50 @@
 import * as core from '@actions/core'
-import { Toolkit } from 'actions-toolkit'
+import * as github from '@actions/github'
+import { promises as fs } from 'fs'
+import * as path from 'path'
 import fm from 'front-matter'
 import nunjucks from 'nunjucks'
 // @ts-ignore
 import dateFilter from 'nunjucks-date-filter'
 import { FrontMatterAttributes, listToArray, setOutputs } from './helpers'
 
-function logError(tools: Toolkit, template: string, action: 'creating' | 'updating', err: any) {
+function logError(template: string, action: 'creating' | 'updating', err: any) {
   // Log the error message
   const errorMessage = `An error occurred while ${action} the issue. This might be caused by a malformed issue title, or a typo in the labels or assignees. Check ${template}!`
-  tools.log.error(errorMessage)
-  tools.log.error(err)
+  core.error(errorMessage)
+  core.error(err)
 
   // The error might have more details
-  if (err.errors) tools.log.error(err.errors)
+  if (err.errors) core.error(err.errors)
 
   // Exit with a failing status
   core.setFailed(errorMessage + '\n\n' + err.message)
-  return tools.exit.failure()
 }
 
-export async function createAnIssue (tools: Toolkit) {
-  const template = tools.inputs.filename || '.github/ISSUE_TEMPLATE.md'
-  const assignees = tools.inputs.assignees
+export async function createAnIssue () {
+  const template = core.getInput('filename') || '.github/ISSUE_TEMPLATE.md'
+  const assignees = core.getInput('assignees')
+  const token = core.getInput('github-token', { required: true })
+  
+  const octokit = github.getOctokit(token)
+  const context = github.context
 
-  const searchExistingType: string = tools.inputs.search_existing || 'open'
+  const searchExistingType: string = core.getInput('search_existing') || 'open'
   if (!['open', 'closed', 'all'].includes(searchExistingType)) {
-    tools.exit.failure(`Invalid value search_existing=${tools.inputs.search_existing}, must be one of open, closed or all`)
+    core.setFailed(`Invalid value search_existing=${core.getInput('search_existing')}, must be one of open, closed or all`)
+    return
   }
 
   let updateExisting: Boolean | null = null
-  if (tools.inputs.update_existing) {
-    if (tools.inputs.update_existing === 'true') {
+  const updateExistingInput = core.getInput('update_existing')
+  if (updateExistingInput) {
+    if (updateExistingInput === 'true') {
       updateExisting = true
-    } else if (tools.inputs.update_existing === 'false') {
+    } else if (updateExistingInput === 'false') {
       updateExisting = false
     } else {
-      tools.exit.failure(`Invalid value update_existing=${tools.inputs.update_existing}, must be one of true or false`)
+      core.setFailed(`Invalid value update_existing=${updateExistingInput}, must be one of true or false`)
+      return
     }
   }
 
@@ -44,70 +52,74 @@ export async function createAnIssue (tools: Toolkit) {
   env.addFilter('date', dateFilter)
 
   const templateVariables = {
-    ...tools.context,
-    repo: tools.context.repo,
+    ...context,
+    repo: context.repo,
     env: process.env,
     date: Date.now()
   }
 
-  // Get the file
-  tools.log.debug('Reading from file', template)
-  const file = await tools.readFile(template) as string
+  // Get the file - use GITHUB_WORKSPACE if available
+  const workspace = process.env.GITHUB_WORKSPACE || process.cwd()
+  const templatePath = path.join(workspace, template)
+  core.debug('Reading from file ' + templatePath)
+  const file = await fs.readFile(templatePath, 'utf-8')
 
   // Grab the front matter as JSON
   const { attributes, body } = fm<FrontMatterAttributes>(file)
-  tools.log(`Front matter for ${template} is`, attributes)
+  core.info(`Front matter for ${template} is ${JSON.stringify(attributes)}`)
 
   const templated = {
     body: env.renderString(body, templateVariables),
     title: env.renderString(attributes.title, templateVariables),
     labels: listToArray(attributes.labels).map(label => env.renderString(label, templateVariables)),
   }
-  tools.log.debug('Templates compiled', templated)
+  core.debug('Templates compiled: ' + JSON.stringify(templated))
 
   if (updateExisting !== null) {
-    tools.log.info(`Fetching ${searchExistingType} issues with title "${templated.title}"`)
+    core.info(`Fetching ${searchExistingType} issues with title "${templated.title}"`)
     const searchExistingQuery = (searchExistingType === 'all') ? '' : `is:${searchExistingType} `
-    const existingIssues = await tools.github.search.issuesAndPullRequests({
+    const existingIssues = await octokit.rest.search.issuesAndPullRequests({
       q: `${searchExistingQuery}is:issue repo:${process.env.GITHUB_REPOSITORY} in:title ${templated.title}`
     })
-    const existingIssue = existingIssues.data.items.find(issue => issue.title === templated.title)
+    const existingIssue = existingIssues.data.items.find((issue: any) => issue.title === templated.title)
     if (existingIssue) {
       if (updateExisting === false) {
-        setOutputs(tools, existingIssue, 'found')
-        tools.exit.success(`Existing issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url} found but not updated`)
+        setOutputs(existingIssue, 'found')
+        core.info(`Existing issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url} found but not updated`)
+        return
       } else {
         try {
-          tools.log.info(`Updating existing issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url}`)
-          const issue = await tools.github.issues.update({
-            ...tools.context.repo,
+          core.info(`Updating existing issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url}`)
+          await octokit.rest.issues.update({
+            ...context.repo,
             issue_number: existingIssue.number,
             body: templated.body
           })
-          setOutputs(tools, existingIssue, 'updated')
-          tools.exit.success(`Updated issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url}`)
+          setOutputs(existingIssue, 'updated')
+          core.info(`Updated issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url}`)
+          return
         } catch (err: any) {
-          return logError(tools, template, 'updating', err)
+          return logError(template, 'updating', err)
         }
       }
     } else {
-      tools.log.info('No existing issue found to update')
+      core.info('No existing issue found to update')
     }
   }
 
   // Create the new issue
-  tools.log.info(`Creating new issue ${templated.title}`)
+  core.info(`Creating new issue ${templated.title}`)
   try {
-    const issue = await tools.github.issues.create({
-      ...tools.context.repo,
+    const issue = await octokit.rest.issues.create({
+      ...context.repo,
       ...templated,
       assignees: assignees ? listToArray(assignees) : listToArray(attributes.assignees),
-      milestone: Number(tools.inputs.milestone || attributes.milestone) || undefined
+      milestone: Number(core.getInput('milestone') || attributes.milestone) || undefined
     })
 
-    setOutputs(tools, issue.data, 'created')
-    tools.log.success(`Created issue ${issue.data.title}#${issue.data.number}: ${issue.data.html_url}`)
+    setOutputs(issue.data, 'created')
+    core.info(`Created issue ${issue.data.title}#${issue.data.number}: ${issue.data.html_url}`)
   } catch (err: any) {
-    return logError(tools, template, 'creating', err)
+    return logError(template, 'creating', err)
   }
 }

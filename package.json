@@ -11,8 +11,8 @@
   "author": "Jason Etcovitch <jasonetco@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "1.11.1",
-    "actions-toolkit": "6.0.1",
+    "@actions/core": "2.0.3",
+    "@actions/github": "6.0.0",
     "front-matter": "4.0.2",
     "js-yaml": "4.1.1",
     "nunjucks": "3.2.4",
@@ -27,19 +27,5 @@
     "nock": "14.0.10",
     "ts-jest": "29.4.6",
     "typescript": "5.9.3"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "setupFiles": [
-      "<rootDir>/tests/setup.ts"
-    ],
-    "moduleFileExtensions": [
-      "ts",
-      "js",
-      "json"
-    ],
-    "transform": {
-      ".+\\.tsx?$": "ts-jest"
-    }
   }
 }

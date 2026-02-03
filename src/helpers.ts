@@ -1,4 +1,4 @@
-import { Toolkit } from 'actions-toolkit'
+import * as core from '@actions/core'
 
 export interface FrontMatterAttributes {
   title: string
@@ -7,10 +7,10 @@ export interface FrontMatterAttributes {
   milestone?: string | number
 }
 
-export function setOutputs (tools: Toolkit, issue: { number: number, html_url: string }, status: string) {
-  tools.outputs.number = String(issue.number)
-  tools.outputs.url = issue.html_url
-  tools.outputs.status = status
+export function setOutputs (issue: { number: number, html_url: string }, status: string) {
+  core.setOutput('number', String(issue.number))
+  core.setOutput('url', issue.html_url)
+  core.setOutput('status', status)
 }
 
 export function listToArray (list?: string[] | string) {

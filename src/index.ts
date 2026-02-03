@@ -1,6 +1,12 @@
-import { Toolkit } from 'actions-toolkit'
+import * as core from '@actions/core'
 import { createAnIssue } from './action'
 
-Toolkit.run(createAnIssue, {
-  secrets: ['GITHUB_TOKEN']
-})
+async function run() {
+  try {
+    await createAnIssue()
+  } catch (error: any) {
+    core.setFailed(error.message)
+  }
+}
+
+run()

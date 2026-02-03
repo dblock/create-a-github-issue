@@ -7,6 +7,10 @@ branding:
   icon: alert-circle
   color: gray-dark
 inputs:
+  github-token:
+    description: GitHub token for authentication. Use ${{ secrets.GITHUB_TOKEN }} or a PAT.
+    required: true
+    default: ${{ github.token }}
   assignees:
     description: GitHub handle of the user(s) to assign the issue (comma-separated).
     required: false
@@ -29,3 +33,5 @@ outputs:
     description: Number of the issue that was created.
   url:
     description: URL of the issue that was created.
+  status:
+    description: Status of the operation (created, updated, or found).
