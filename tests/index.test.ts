@@ -1,8 +1,26 @@
 import nock from 'nock'
-import * as core from '@actions/core'
 import { Toolkit } from 'actions-toolkit'
-import { Signale } from 'signale'
-import { createAnIssue } from '../src/action'
+import signale from 'signale'
+import { jest, describe, beforeEach, afterEach, it, expect } from '@jest/globals'
+
+// Mock @actions/core before importing the module that uses it
+const mockSetOutput = jest.fn()
+const mockSetFailed = jest.fn()
+
+jest.unstable_mockModule('@actions/core', () => ({
+  setOutput: mockSetOutput,
+  setFailed: mockSetFailed,
+  getInput: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warning: jest.fn(),
+  error: jest.fn(),
+}))
+
+// Import after mocking
+const { createAnIssue } = await import('../src/action')
+
+const { Signale } = signale
 
 function generateToolkit() {
   const tools = new Toolkit({
@@ -13,13 +31,17 @@ function generateToolkit() {
   jest.spyOn(tools.log, 'error')
   jest.spyOn(tools.log, 'success')
 
-  // Turn core.setOutput into a mocked noop
-  jest.spyOn(core, 'setOutput')
-    .mockImplementation(() => {})
-
-  // Turn core.setFailed into a mocked noop
-  jest.spyOn(core, 'setFailed')
-    .mockImplementation(() => {})
+  // Spy on outputs to verify they are set correctly
+  const outputsSpy = {} as Record<string, string>
+  Object.defineProperty(tools, 'outputs', {
+    get: () => new Proxy(outputsSpy, {
+      set: (target, prop, value) => {
+        target[prop as string] = value
+        mockSetOutput(prop, value)
+        return true
+      }
+    })
+  })
 
   tools.exit.success = jest.fn() as any
   tools.exit.failure = jest.fn() as any
@@ -62,10 +84,10 @@ describe('create-a-github-issue', () => {
     expect((tools.log.success as any).mock.calls).toMatchSnapshot()
 
     // Verify that the outputs were set
-    expect(core.setOutput).toHaveBeenCalledTimes(3)
-    expect(core.setOutput).toHaveBeenCalledWith('url', 'www')
-    expect(core.setOutput).toHaveBeenCalledWith('number', '1')
-    expect(core.setOutput).toHaveBeenCalledWith('status', 'created')
+    expect(mockSetOutput).toHaveBeenCalledTimes(3)
+    expect(mockSetOutput).toHaveBeenCalledWith('url', 'www')
+    expect(mockSetOutput).toHaveBeenCalledWith('number', '1')
+    expect(mockSetOutput).toHaveBeenCalledWith('status', 'created')
   })
 
   it('creates a new issue from a different template', async () => {
@@ -182,10 +204,10 @@ describe('create-a-github-issue', () => {
     expect(tools.exit.success).toHaveBeenCalled()
 
     // Verify that the outputs were set
-    expect(core.setOutput).toHaveBeenCalledTimes(3)
-    expect(core.setOutput).toHaveBeenCalledWith('url', 'www')
-    expect(core.setOutput).toHaveBeenCalledWith('number', '1')
-    expect(core.setOutput).toHaveBeenCalledWith('status', 'updated')
+    expect(mockSetOutput).toHaveBeenCalledTimes(3)
+    expect(mockSetOutput).toHaveBeenCalledWith('url', 'www')
+    expect(mockSetOutput).toHaveBeenCalledWith('number', '1')
+    expect(mockSetOutput).toHaveBeenCalledWith('status', 'updated')
   })
   
   it('checks the value of update_existing', async () => {
@@ -246,10 +268,10 @@ describe('create-a-github-issue', () => {
     expect(tools.exit.success).toHaveBeenCalledWith('Existing issue Hello!#1: www found but not updated')
 
     // Verify that the outputs were set
-    expect(core.setOutput).toHaveBeenCalledTimes(3)
-    expect(core.setOutput).toHaveBeenCalledWith('url', 'www')
-    expect(core.setOutput).toHaveBeenCalledWith('number', '1')
-    expect(core.setOutput).toHaveBeenCalledWith('status', 'found')
+    expect(mockSetOutput).toHaveBeenCalledTimes(3)
+    expect(mockSetOutput).toHaveBeenCalledWith('url', 'www')
+    expect(mockSetOutput).toHaveBeenCalledWith('number', '1')
+    expect(mockSetOutput).toHaveBeenCalledWith('status', 'found')
   })
 
   it('exits when updating an issue fails', async () => {
