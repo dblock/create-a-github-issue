@@ -1,6 +1,5 @@
-### 3.3.0 (Next)
+### 3.3.0 (2026/02/04)
 
-* Your contribution here.
 * [#168](https://github.com/dblock/create-a-github-issue/pull/168): Upgraded @actions/core to 3.0 with ESM support - [@dblock](https://github.com/dblock).
 * [#169](https://github.com/dblock/create-a-github-issue/pull/169): Removed deprecated actions-toolkit, use @actions/core and @actions/github directly - [@dblock](https://github.com/dblock).
 
