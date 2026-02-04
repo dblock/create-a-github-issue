@@ -13,7 +13,7 @@
   "license": "MIT",
   "dependencies": {
     "@actions/core": "3.0",
-    "@actions/github": "^6.0.1",
+    "@actions/github": "^9.0.0",
     "front-matter": "4.0.2",
     "js-yaml": "4.1.1",
     "nunjucks": "3.2.4",
