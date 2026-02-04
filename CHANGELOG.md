@@ -1,3 +1,7 @@
+### 3.3.1 (Next)
+
+* Your contribution here.
+
 ### 3.3.0 (2026/02/04)
 
 * [#168](https://github.com/dblock/create-a-github-issue/pull/168): Upgraded @actions/core to 3.0 with ESM support - [@dblock](https://github.com/dblock).
