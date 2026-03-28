@@ -1,3 +1,7 @@
+### 3.4.1 (Next)
+
+* Your contribution here.
+
 ### 3.4.0 (2026/03/28)
 
 * [#175](https://github.com/dblock/create-a-github-issue/pull/175): Upgrade action to run on node24 - [@stefanvanburen](https://github.com/stefanvanburen).
