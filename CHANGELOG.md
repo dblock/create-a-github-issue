@@ -1,7 +1,7 @@
-### 3.4.0 (Next)
+### 3.4.0 (2026/03/28)
 
-* Your contribution here.
 * [#175](https://github.com/dblock/create-a-github-issue/pull/175): Upgrade action to run on node24 - [@stefanvanburen](https://github.com/stefanvanburen).
+* [#178](https://github.com/dblock/create-a-github-issue/pull/178): Skip changelog check for dependabot and renovate PRs - [@dblock](https://github.com/dblock).
 
 ### 3.3.0 (2026/02/04)
 
