@@ -18,6 +18,6 @@ jobs:
         node-version: 24.x
     - run: npm ci
     - run: npm test
-    - uses: codecov/codecov-action@v5
+    - uses: codecov/codecov-action@v6
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
