@@ -24,9 +24,9 @@
     "@types/jest": "30.0.0",
     "@types/nunjucks": "3.2.6",
     "@vercel/ncc": "0.38.4",
-    "jest": "30.2.0",
-    "ts-jest": "29.4.6",
-    "typescript": "5.9.3"
+    "jest": "30.3.0",
+    "ts-jest": "29.4.9",
+    "typescript": "6.0.2"
   },
   "jest": {
     "testEnvironment": "node",
