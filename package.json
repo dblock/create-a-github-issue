@@ -22,6 +22,7 @@
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.3",
     "@types/jest": "30.0.0",
+    "@types/node": "^22.0.0",
     "@types/nunjucks": "3.2.6",
     "@vercel/ncc": "0.38.4",
     "jest": "30.3.0",
