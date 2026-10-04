@@ -1,6 +1,6 @@
-### 3.4.1 (Next)
+### 3.4.1 (2026/10/04)
 
-* Your contribution here.
+* [#198](https://github.com/dblock/create-a-github-issue/pull/198): Dependency maintenance release with updated runtime dependencies, development tooling, and CI actions - [@dblock](https://github.com/dblock).
 
 ### 3.4.0 (2026/03/28)
 
