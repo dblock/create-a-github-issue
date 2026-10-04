@@ -1,3 +1,8 @@
+### 3.4.2 (Next)
+
+* [#190](https://github.com/dblock/create-a-github-issue/pull/190): Updated dependencies while keeping TypeScript compatible with ts-jest - [@dblock](https://github.com/dblock).
+* Your contribution here.
+
 ### 3.4.1 (2026/10/04)
 
 * [#198](https://github.com/dblock/create-a-github-issue/pull/198): Dependency maintenance release with updated runtime dependencies, development tooling, and CI actions - [@dblock](https://github.com/dblock).
