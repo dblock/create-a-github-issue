@@ -5,6 +5,13 @@
     ":disableDependencyDashboard",
     "schedule:monthly"   
   ],
+  "packageRules": [
+    {
+      "description": "Keep TypeScript compatible with ts-jest, which requires TypeScript <7.",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
+    }
+  ],
   "labels": [
     "dependencies",
     "skip-changelog"
