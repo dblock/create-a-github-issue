@@ -109,10 +109,25 @@ export async function createAnIssue () {
   if (updateExisting !== null) {
     core.info(`Fetching ${searchExistingType} issues with title "${templated.title}"`)
     const searchExistingQuery = (searchExistingType === 'all') ? '' : `is:${searchExistingType} `
-    const existingIssues = await octokit.rest.search.issuesAndPullRequests({
-      q: `${searchExistingQuery}is:issue repo:${owner}/${repo} in:title ${templated.title}`
-    })
-    const existingIssue = existingIssues.data.items.find(issue => issue.title === templated.title)
+    let incompleteSearch = false
+    const existingIssues = await octokit.paginate(
+      octokit.rest.search.issuesAndPullRequests,
+      {
+        q: `${searchExistingQuery}is:issue repo:${owner}/${repo} in:title ${JSON.stringify(templated.title)}`,
+        per_page: 100
+      },
+      (response, done) => {
+        incompleteSearch ||= response.data.incomplete_results !== false || response.data.total_count > 1000
+        const issue = response.data.find(issue => issue.title === templated.title)
+        if (!issue) return []
+        done()
+        return [issue]
+      }
+    )
+    const existingIssue = existingIssues[0]
+    if (!existingIssue && incompleteSearch) {
+      throw new Error('GitHub returned incomplete issue search results; refusing to create a possible duplicate.')
+    }
     if (existingIssue) {
       if (updateExisting === false) {
         setOutputs(existingIssue, 'found')

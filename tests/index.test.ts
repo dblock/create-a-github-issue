@@ -30,6 +30,18 @@ jest.unstable_mockModule('@actions/github', () => ({
     action: 'create-a-github-issue',
   },
   getOctokit: jest.fn(() => ({
+    paginate: async (
+      search: typeof mockSearchIssuesAndPullRequests,
+      options: unknown,
+      map: (response: { data: unknown[] }, done: () => void) => unknown[]
+    ) => {
+      const response = await search(options)
+      const data = Object.assign(response.data.items, {
+        incomplete_results: response.data.incomplete_results ?? false,
+        total_count: response.data.total_count ?? response.data.items.length
+      })
+      return map({ data }, () => {})
+    },
     rest: {
       issues: {
         create: mockIssuesCreate,
@@ -165,7 +177,8 @@ describe('create-a-github-issue', () => {
     await createAnIssue()
 
     expect(mockSearchIssuesAndPullRequests).toHaveBeenCalledWith({
-      q: 'is:open is:issue repo:another-owner/another-repo in:title Hello!'
+      q: 'is:open is:issue repo:another-owner/another-repo in:title "Hello!"',
+      per_page: 100
     })
     expect(mockIssuesCreate).not.toHaveBeenCalled()
     if (updateExisting === 'true') {
