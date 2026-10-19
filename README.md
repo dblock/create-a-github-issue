@@ -73,6 +73,8 @@ The `assignees` input takes precedence over front matter, for example `assignees
 
 Note that you can only assign people matching given [conditions](https://help.github.com/en/github/managing-your-work-on-github/assigning-issues-and-pull-requests-to-other-github-users).
 
+GitHub API requests automatically retry up to twice when a primary or secondary rate limit is reached. The action logs each retry and waits until the primary limit resets or for the secondary limit's `Retry-After` delay (60 seconds if no delay is provided). If retries are exhausted, the action fails; permission errors are not retried.
+
 ### Dates
 
 Additionally, you can use the `date` filter and variable to show some information about when this issue was created:
