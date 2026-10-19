@@ -1,5 +1,6 @@
 ### 3.4.2 (Next)
 
+* [#39](https://github.com/dblock/create-a-github-issue/issues/39): Retry GitHub API rate limits with bounded, header-aware delays - [@dblock](https://github.com/dblock).
 * [#162](https://github.com/JasonEtco/create-an-issue/issues/162): Add opt-in reopening of matched closed issues with reopen_existing - [@dblock](https://github.com/dblock).
 * [#199](https://github.com/JasonEtco/create-an-issue/issues/199): Support issue types in template front matter - [@dblock](https://github.com/dblock).
 * [#8](https://github.com/dblock/create-a-github-issue/issues/8): Support creating, searching for, and updating issues in another repository with the repo input - [@dblock](https://github.com/dblock).

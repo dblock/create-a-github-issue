@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import { throttling } from '@octokit/plugin-throttling'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import fm from 'front-matter'
@@ -7,6 +8,15 @@ import nunjucks from 'nunjucks'
 // @ts-ignore
 import dateFilter from 'nunjucks-date-filter'
 import { FrontMatterAttributes, listToArray, setOutputs } from './helpers'
+
+function retryRateLimit(retryAfter: number, _options: unknown, _octokit: unknown, retryCount: number) {
+  if (retryCount >= 2) {
+    core.warning('GitHub rate limit reached; no retries remaining.')
+    return false
+  }
+  core.warning(`GitHub rate limit reached; retrying in ${retryAfter} seconds (${retryCount + 1}/2).`)
+  return true
+}
 
 function logError(template: string, action: 'creating' | 'updating', err: any) {
   // Log the error message
@@ -89,7 +99,12 @@ export async function createAnIssue () {
   core.debug(`Templates compiled ${JSON.stringify(templated)}`)
 
   const token = process.env.GITHUB_TOKEN || core.getInput('token')
-  const octokit = github.getOctokit(token)
+  const octokit = github.getOctokit(token, {
+    throttle: {
+      onRateLimit: retryRateLimit,
+      onSecondaryRateLimit: retryRateLimit
+    }
+  }, throttling)
 
   if (updateExisting !== null) {
     core.info(`Fetching ${searchExistingType} issues with title "${templated.title}"`)
