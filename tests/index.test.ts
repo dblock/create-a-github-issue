@@ -87,6 +87,7 @@ describe('create-a-github-issue', () => {
     delete process.env.INPUT_MILESTONE
     delete process.env.INPUT_REPO
     delete process.env.ISSUE_TYPE
+    delete process.env.INPUT_REOPEN_EXISTING
 
     // Simulate an environment variable added for the action
     process.env.EXAMPLE = 'foo'
@@ -292,7 +293,7 @@ describe('create-a-github-issue', () => {
 
   it('updates an existing closed issue with the same title', async () => {
     mockSearchIssuesAndPullRequests.mockResolvedValue({
-      data: { items: [{ number: 1, title: 'Hello!', html_url: 'www' }] }
+      data: { items: [{ number: 1, title: 'Hello!', html_url: 'www', state: 'closed' }] }
     })
 
     process.env.INPUT_UPDATE_EXISTING = 'true'
@@ -300,6 +301,54 @@ describe('create-a-github-issue', () => {
 
     await createAnIssue()
     expect(mockInfo).toHaveBeenCalledWith('Updated issue Hello!#1: www')
+    expect(params).not.toHaveProperty('state')
+  })
+
+  it.each([
+    { state: 'closed', reopen: 'true', search: 'all', expected: 'open' },
+    { state: 'closed', reopen: 'true', search: 'closed', expected: 'open' },
+    { state: 'closed', reopen: 'false', search: 'all', expected: undefined },
+    { state: 'open', reopen: 'true', search: 'all', expected: undefined }
+  ])('updates a $state issue with reopen_existing=$reopen and search_existing=$search', async ({ state, reopen, search, expected }) => {
+    process.env.INPUT_UPDATE_EXISTING = 'true'
+    process.env.INPUT_REOPEN_EXISTING = reopen
+    process.env.INPUT_SEARCH_EXISTING = search
+    mockSearchIssuesAndPullRequests.mockResolvedValue({
+      data: { items: [{ number: 1, title: 'Hello!', html_url: 'www', state }] }
+    })
+
+    await createAnIssue()
+
+    expect(mockIssuesUpdate).toHaveBeenCalledTimes(1)
+    expect(params.state).toBe(expected)
+    expect(params.body).toBeDefined()
+    expect(mockSetOutput).toHaveBeenCalledWith('status', 'updated')
+  })
+
+  it('does not reopen a closed issue when updates are disabled', async () => {
+    process.env.INPUT_UPDATE_EXISTING = 'false'
+    process.env.INPUT_REOPEN_EXISTING = 'true'
+    process.env.INPUT_SEARCH_EXISTING = 'all'
+    mockSearchIssuesAndPullRequests.mockResolvedValue({
+      data: { items: [{ number: 1, title: 'Hello!', html_url: 'www', state: 'closed' }] }
+    })
+
+    await createAnIssue()
+
+    expect(mockIssuesUpdate).not.toHaveBeenCalled()
+    expect(mockIssuesCreate).not.toHaveBeenCalled()
+    expect(mockSetOutput).toHaveBeenCalledWith('status', 'found')
+  })
+
+  it('rejects invalid reopen_existing values', async () => {
+    process.env.INPUT_REOPEN_EXISTING = 'invalid'
+
+    await createAnIssue()
+
+    expect(mockSetFailed).toHaveBeenCalledWith('Invalid value reopen_existing=invalid, must be one of true or false')
+    expect(mockIssuesUpdate).not.toHaveBeenCalled()
+    expect(mockIssuesCreate).not.toHaveBeenCalled()
+    expect(mockSearchIssuesAndPullRequests).not.toHaveBeenCalled()
   })
 
   it('finds, but does not update an existing issue with the same title', async () => {

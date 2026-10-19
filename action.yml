@@ -23,6 +23,10 @@ inputs:
   update_existing:
     description: Update an open existing issue with the same title if it exists.
     required: false
+  reopen_existing:
+    description: Reopen a matched closed issue when update_existing is true. Use search_existing set to all or closed.
+    required: false
+    default: 'false'
   search_existing:
     description: Existing types of issues to search for (comma-separated).
     required: false
