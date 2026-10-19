@@ -1,4 +1,4 @@
-### 3.5.0 (Next)
+### 3.5.0 (2026/10/19)
 
 * [#224](https://github.com/dblock/create-a-github-issue/pull/224): Correct project names and Node.js development instructions in the contribution guide - [@dblock](https://github.com/dblock).
 * [#210](https://github.com/dblock/create-a-github-issue/pull/210): Add live CI integration coverage for issue lifecycle, metadata, templating, and failure cases with disposable resource cleanup - [@dblock](https://github.com/dblock).
@@ -13,8 +13,6 @@
 * [#8](https://github.com/dblock/create-a-github-issue/issues/8): Support creating, searching for, and updating issues in another repository with the repo input - [@dblock](https://github.com/dblock).
 * [#110](https://github.com/dblock/create-a-github-issue/issues/110): Support template variables in front matter assignees and the assignees input - [@dblock](https://github.com/dblock).
 * [#190](https://github.com/dblock/create-a-github-issue/pull/190): Updated dependencies while keeping TypeScript compatible with ts-jest - [@dblock](https://github.com/dblock).
-* Your contribution here.
-
 ### 3.4.1 (2026/10/04)
 
 * [#198](https://github.com/dblock/create-a-github-issue/pull/198): Dependency maintenance release with updated runtime dependencies, development tooling, and CI actions - [@dblock](https://github.com/dblock).
