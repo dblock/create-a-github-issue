@@ -75,6 +75,7 @@ export async function createAnIssue () {
   const templated = {
     body: env.renderString(body, templateVariables),
     title: env.renderString(attributes.title, templateVariables),
+    ...(attributes.type ? { type: env.renderString(attributes.type, templateVariables) } : {}),
     assignees: listToArray(assignees || attributes.assignees).map(assignee => env.renderString(assignee, templateVariables)),
     labels: listToArray(attributes.labels).map(label => env.renderString(label, templateVariables)),
   }

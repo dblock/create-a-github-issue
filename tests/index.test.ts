@@ -86,6 +86,7 @@ describe('create-a-github-issue', () => {
     delete process.env.INPUT_ASSIGNEES
     delete process.env.INPUT_MILESTONE
     delete process.env.INPUT_REPO
+    delete process.env.ISSUE_TYPE
 
     // Simulate an environment variable added for the action
     process.env.EXAMPLE = 'foo'
@@ -98,6 +99,7 @@ describe('create-a-github-issue', () => {
   it('creates a new issue', async () => {
     await createAnIssue()
     expect(params).toMatchSnapshot()
+    expect(params).not.toHaveProperty('type')
     expect(mockInfo).toHaveBeenCalledWith(expect.stringContaining('Created issue'))
 
     // Verify that the outputs were set
@@ -180,6 +182,19 @@ describe('create-a-github-issue', () => {
     await createAnIssue()
     expect(params).toMatchSnapshot()
     expect(mockInfo).toHaveBeenCalledWith(expect.stringContaining('Created issue'))
+  })
+
+  it.each([
+    { value: undefined, expected: 'Bug' },
+    { value: 'Feature', expected: 'Feature' }
+  ])('creates an issue with type $expected from front matter', async ({ value, expected }) => {
+    process.env.INPUT_FILENAME = '.github/issue-type.md'
+    if (value) process.env.ISSUE_TYPE = value
+
+    await createAnIssue()
+
+    expect(params.type).toBe(expected)
+    expect(mockSetFailed).not.toHaveBeenCalled()
   })
 
   it('creates a new issue with assignees and labels as comma-delimited strings', async () => {

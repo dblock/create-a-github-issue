@@ -5,6 +5,7 @@
 - [Fork](#fork)
 - [Usage](#usage)
   - [Dates](#dates)
+  - [Issue types](#issue-types)
   - [Custom templates](#custom-templates)
   - [Inputs](#inputs)
   - [Outputs](#outputs)
@@ -84,6 +85,20 @@ What's everyone up to this week?
 ```
 
 This example will create a new issue with a title like **Weekly Radar Saturday, November 10th**. You can pass any valid [Moment.js formatting string](https://momentjs.com/docs/#/displaying/) to the filter.
+
+### Issue types
+
+Set `type` in front matter to associate a new issue with an issue type available in the repository's organization:
+
+```markdown
+---
+title: Something is broken
+type: Bug
+---
+Describe the bug here.
+```
+
+The type name also supports template variables and filters, for example `type: "{{ env.ISSUE_TYPE }}"`. If no type is specified, the action omits it from the request. Updating an existing issue leaves its type unchanged. GitHub requires push access to set an issue's type and may silently ignore it without that access; see [Create an issue](https://docs.github.com/en/rest/issues/issues#create-an-issue).
 
 ### Custom templates
 
