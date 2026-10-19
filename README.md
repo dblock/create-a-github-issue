@@ -110,12 +110,14 @@ steps:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     with:
+      repo: owner/other-repository
       assignees: JasonEtco, octocat
       milestone: 1
       update_existing: true
       search_existing: all
 ```
 
+* The `repo` input selects the repository to create, search for, and update issues in, in `owner/repo` format. It defaults to the workflow repository. For another repository, set `GITHUB_TOKEN` to a token with access to that repository and permission to write issues; the workflow's default token is normally limited to its own repository. Template variables such as `repo` and `env.GITHUB_REPOSITORY` still describe the workflow repository.
 * The `assignees` and `milestone` speak for themselves.
 * The `update_existing` param can be passed and set to `true` when you want to update an open issue with the **exact same title** when it exists and `false` if you don't want to create a new issue, but skip updating an existing one.
 * The `search_existing` param lets you specify whether to search `open`, `closed`, or `all` existing issues for duplicates (default is `open`).
