@@ -5,6 +5,7 @@
 - [Fork](#fork)
 - [Usage](#usage)
   - [Dates](#dates)
+  - [Escaping template content](#escaping-template-content)
   - [Issue types](#issue-types)
   - [Custom templates](#custom-templates)
   - [Inputs](#inputs)
@@ -87,6 +88,32 @@ What's everyone up to this week?
 ```
 
 This example will create a new issue with a title like **Weekly Radar Saturday, November 10th**. You can pass any valid [Moment.js formatting string](https://momentjs.com/docs/#/displaying/) to the filter.
+
+### Escaping template content
+
+The action parses YAML front matter first, then renders the body and templated front matter fields with Nunjucks. YAML quoting and Nunjucks escaping solve different problems.
+
+#### YAML front matter
+
+A title beginning with a backtick must be quoted to be valid YAML:
+
+```yaml
+title: "`light-the-torch` is out of sync"
+```
+
+The surrounding YAML quotes are not included in the issue title. Quoting a value does not prevent Nunjucks expressions inside it from being rendered.
+
+#### Literal Nunjucks syntax
+
+Nunjucks interprets `{{` as the start of an expression, even inside Markdown backticks or code fences. To include literal template syntax in the issue body, wrap it in a raw block:
+
+```text
+{% raw %}
+Example syntax: {{ value }}
+{% endraw %}
+```
+
+The raw tags are omitted from the issue body, and their contents are preserved literally rather than interpolated. Raw blocks affect Nunjucks rendering only; front matter must still be valid YAML.
 
 ### Issue types
 
