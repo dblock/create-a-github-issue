@@ -276,6 +276,22 @@ describe('create-a-github-issue', () => {
       expect(mockSetOutput).not.toHaveBeenCalled()
     })
 
+    it.each(['true', 'false'])('does not report success if adding an existing issue fails with update_existing=%s', async updateExisting => {
+      process.env.INPUT_UPDATE_EXISTING = updateExisting
+      mockSearchIssuesAndPullRequests.mockResolvedValue({
+        data: { items: [{ number: 42, node_id: 'I_existing', title: 'Hello!', html_url: 'www' }] }
+      })
+      mockGraphql
+        .mockResolvedValueOnce({ owner: { projectV2: { id: 'PVT_project' } } })
+        .mockRejectedValueOnce(new Error('Project write access denied'))
+
+      await expect(createAnIssue()).rejects.toThrow('Project write access denied')
+
+      expect(mockIssuesUpdate).toHaveBeenCalledTimes(updateExisting === 'true' ? 1 : 0)
+      expect(mockIssuesCreate).not.toHaveBeenCalled()
+      expect(mockSetOutput).not.toHaveBeenCalled()
+    })
+
     describe('multiple projects', () => {
       beforeEach(() => {
         process.env.INPUT_FILENAME = '.github/projects.md'

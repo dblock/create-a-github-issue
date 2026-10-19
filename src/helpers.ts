@@ -9,7 +9,9 @@ export interface FrontMatterAttributes {
   milestone?: string | number
 }
 
-export function setOutputs (issue: { number: number, html_url: string }, status: string) {
+export type IssueStatus = 'created' | 'updated' | 'found'
+
+export function setOutputs (issue: { number: number, html_url: string }, status: IssueStatus) {
   core.setOutput('number', String(issue.number))
   core.setOutput('url', issue.html_url)
   core.setOutput('status', status)
