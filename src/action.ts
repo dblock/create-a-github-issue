@@ -8,6 +8,7 @@ import nunjucks from 'nunjucks'
 // @ts-ignore
 import dateFilter from 'nunjucks-date-filter'
 import { FrontMatterAttributes, listToArray, setOutputs } from './helpers'
+import { addIssueToProjects, resolveProject } from './projects'
 
 function retryRateLimit(retryAfter: number, _options: unknown, _octokit: unknown, retryCount: number) {
   if (retryCount >= 2) {
@@ -20,7 +21,7 @@ function retryRateLimit(retryAfter: number, _options: unknown, _octokit: unknown
 
 function logError(template: string, action: 'creating' | 'updating', err: any) {
   // Log the error message
-  const errorMessage = `An error occurred while ${action} the issue. This might be caused by a malformed issue title, or a typo in the labels or assignees. Check ${template}!`
+  const errorMessage = `An error occurred while ${action} the issue or adding it to a project. Check the title, labels, and assignees in ${template}, and the token's project permissions if a project is configured.`
   core.error(errorMessage)
   core.error(err)
 
@@ -88,6 +89,12 @@ export async function createAnIssue () {
   // Grab the front matter as JSON
   const { attributes, body } = fm<FrontMatterAttributes>(file)
   core.info(`Front matter for ${template} is ${JSON.stringify(attributes)}`)
+  const projectUrls = attributes.projects === undefined
+    ? []
+    : Array.isArray(attributes.projects) ? attributes.projects : [attributes.projects]
+  if (projectUrls.some(url => typeof url !== 'string')) {
+    throw new Error(`The projects field in ${template} must be a Projects v2 URL or a list of URLs.`)
+  }
 
   const templated = {
     body: env.renderString(body, templateVariables),
@@ -105,6 +112,9 @@ export async function createAnIssue () {
       onSecondaryRateLimit: retryRateLimit
     }
   }, throttling)
+  const projects = await Promise.all(projectUrls.map(url =>
+    resolveProject(octokit, env.renderString(url, templateVariables))
+  ))
 
   if (updateExisting !== null) {
     core.info(`Fetching ${searchExistingType} issues with title "${templated.title}"`)
@@ -130,6 +140,7 @@ export async function createAnIssue () {
     }
     if (existingIssue) {
       if (updateExisting === false) {
+        await addIssueToProjects(octokit, projects, existingIssue)
         setOutputs(existingIssue, 'found')
         core.info(`Existing issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url} found but not updated`)
         return
@@ -142,6 +153,7 @@ export async function createAnIssue () {
             body: templated.body,
             ...(reopenExisting && existingIssue.state === 'closed' ? { state: 'open' as const } : {})
           })
+          await addIssueToProjects(octokit, projects, existingIssue)
           setOutputs(existingIssue, 'updated')
           core.info(`Updated issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url}`)
           return
@@ -163,6 +175,7 @@ export async function createAnIssue () {
       milestone: Number(core.getInput('milestone') || attributes.milestone) || undefined
     })
 
+    await addIssueToProjects(octokit, projects, issue.data)
     setOutputs(issue.data, 'created')
     core.info(`Created issue ${issue.data.title}#${issue.data.number}: ${issue.data.html_url}`)
   } catch (err: any) {
