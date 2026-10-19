@@ -68,6 +68,7 @@ export async function createAnIssue () {
   const templated = {
     body: env.renderString(body, templateVariables),
     title: env.renderString(attributes.title, templateVariables),
+    assignees: listToArray(assignees || attributes.assignees).map(assignee => env.renderString(assignee, templateVariables)),
     labels: listToArray(attributes.labels).map(label => env.renderString(label, templateVariables)),
   }
   core.debug(`Templates compiled ${JSON.stringify(templated)}`)
@@ -113,7 +114,6 @@ export async function createAnIssue () {
     const issue = await octokit.rest.issues.create({
       ...context.repo,
       ...templated,
-      assignees: assignees ? listToArray(assignees) : listToArray(attributes.assignees),
       milestone: Number(core.getInput('milestone') || attributes.milestone) || undefined
     })
 

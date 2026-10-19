@@ -155,6 +155,28 @@ describe('create-a-github-issue', () => {
     expect(mockInfo).toHaveBeenCalledWith(expect.stringContaining('Created issue'))
   })
 
+  it.each(['templated-assignees-string', 'templated-assignees-array'])(
+    'renders assignee template variables in %s front matter',
+    async template => {
+      process.env.INPUT_FILENAME = `.github/${template}.md`
+
+      await createAnIssue()
+
+      expect(params.assignees).toEqual(['foo', 'JasonEtco'])
+      expect(mockSetFailed).not.toHaveBeenCalled()
+    }
+  )
+
+  it('renders assignee input template variables instead of front matter assignees', async () => {
+    process.env.INPUT_FILENAME = '.github/kitchen-sink.md'
+    process.env.INPUT_ASSIGNEES = '{{ env.EXAMPLE | upper }}, {{ repo.owner }}'
+
+    await createAnIssue()
+
+    expect(params.assignees).toEqual(['FOO', 'JasonEtco'])
+    expect(mockSetFailed).not.toHaveBeenCalled()
+  })
+
   it('creates a new issue with a milestone passed by input', async () => {
     process.env.INPUT_MILESTONE = '1'
     await createAnIssue()
