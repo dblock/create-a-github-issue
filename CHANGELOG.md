@@ -1,5 +1,6 @@
 ### 3.5.0 (Next)
 
+* [#210](https://github.com/dblock/create-a-github-issue/pull/210): Add live CI integration coverage for issue lifecycle, metadata, templating, and failure cases with disposable resource cleanup - [@dblock](https://github.com/dblock).
 * [#209](https://github.com/dblock/create-a-github-issue/pull/209): Simplify issue orchestration and failure reporting, and validate front matter field types before API requests - [@dblock](https://github.com/dblock).
 * [#213](https://github.com/dblock/create-a-github-issue/pull/213): Remove unreleased Projects v2 support because it requires credentials beyond the default workflow token - [@dblock](https://github.com/dblock).
 * [#178](https://github.com/JasonEtco/create-an-issue/issues/178): Quote rendered titles and paginate exact-title duplicate searches, failing safely on incomplete results - [@dblock](https://github.com/dblock).

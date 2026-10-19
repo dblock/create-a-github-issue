@@ -5,6 +5,10 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -18,6 +22,197 @@ jobs:
         node-version: 24.x
     - run: npm ci
     - run: npm test
+    - run: node --test tests/integration/workflow.test.mjs
     - uses: codecov/codecov-action@v7
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
+
+  integration:
+    # Organization issue types require an organization-owned repository; this repository is user-owned.
+    # Cross-repository writes need another token. Rate limits and incomplete/paginated search
+    # responses are covered offline rather than deliberately exhausting GitHub's API limits.
+    needs: build
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.pull_request.head.repo.full_name == github.repository &&
+       github.actor != 'dependabot[bot]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      INTEGRATION_KEY: ${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+      - run: npm ci
+      - run: npm run build
+      - name: Prepare disposable metadata and nested workspace reports
+        id: prepare
+        run: node tests/integration/workflow.mjs prepare
+      - name: Create issue with this checkout
+        id: create
+        uses: ./
+        with:
+          filename: tests/integration/generated-issue.md
+          repo: ${{ github.repository }}
+          update_existing: 'true'
+        env:
+          INTEGRATION_PHASE: created
+      - name: Verify creation and wait for search indexing
+        run: |
+          node tests/integration/workflow.mjs verify
+          node tests/integration/workflow.mjs wait
+        env:
+          ISSUE_NUMBER: ${{ steps.create.outputs.number }}
+          ISSUE_URL: ${{ steps.create.outputs.url }}
+          ISSUE_STATUS: ${{ steps.create.outputs.status }}
+          EXPECTED_STATUS: created
+          EXPECTED_PHASE: created
+      - name: Find issue without changing its body
+        id: find
+        uses: ./
+        with:
+          filename: tests/integration/generated-issue.md
+          update_existing: 'false'
+        env:
+          INTEGRATION_PHASE: must-not-be-written
+      - name: Verify unchanged issue
+        run: node tests/integration/workflow.mjs verify
+        env:
+          ISSUE_NUMBER: ${{ steps.find.outputs.number }}
+          ISSUE_URL: ${{ steps.find.outputs.url }}
+          ISSUE_STATUS: ${{ steps.find.outputs.status }}
+          ORIGINAL_NUMBER: ${{ steps.create.outputs.number }}
+          EXPECTED_STATUS: found
+          EXPECTED_PHASE: created
+      - name: Update existing issue
+        id: update
+        uses: ./
+        with:
+          filename: tests/integration/generated-issue.md
+          update_existing: 'true'
+        env:
+          INTEGRATION_PHASE: updated
+      - name: Verify update and close issue
+        run: |
+          node tests/integration/workflow.mjs verify
+          node tests/integration/workflow.mjs close
+        env:
+          ISSUE_NUMBER: ${{ steps.update.outputs.number }}
+          ISSUE_URL: ${{ steps.update.outputs.url }}
+          ISSUE_STATUS: ${{ steps.update.outputs.status }}
+          ORIGINAL_NUMBER: ${{ steps.create.outputs.number }}
+          EXPECTED_STATUS: updated
+          EXPECTED_PHASE: updated
+      - name: Wait for closed issue search indexing
+        run: node tests/integration/workflow.mjs wait
+        env:
+          ISSUE_NUMBER: ${{ steps.create.outputs.number }}
+          EXPECTED_STATE: closed
+      - name: Update a closed issue without reopening
+        # First exercise a closed-only search without implicitly reopening the issue.
+        id: closed_update
+        uses: ./
+        with:
+          filename: tests/integration/generated-issue.md
+          update_existing: 'true'
+          search_existing: closed
+        env:
+          INTEGRATION_PHASE: closed-update
+      - name: Verify closed update and wait for closed search indexing
+        run: |
+          node tests/integration/workflow.mjs verify
+          node tests/integration/workflow.mjs wait
+        env:
+          ISSUE_NUMBER: ${{ steps.closed_update.outputs.number }}
+          ISSUE_URL: ${{ steps.closed_update.outputs.url }}
+          ISSUE_STATUS: ${{ steps.closed_update.outputs.status }}
+          ORIGINAL_NUMBER: ${{ steps.create.outputs.number }}
+          EXPECTED_STATUS: updated
+          EXPECTED_PHASE: closed-update
+          EXPECTED_STATE: closed
+      - name: Reopen existing issue
+        id: reopen
+        uses: ./
+        with:
+          filename: tests/integration/generated-issue.md
+          update_existing: 'true'
+          search_existing: all
+          reopen_existing: 'true'
+        env:
+          INTEGRATION_PHASE: reopened
+      - name: Verify reopened issue
+        run: node tests/integration/workflow.mjs verify
+        env:
+          ISSUE_NUMBER: ${{ steps.reopen.outputs.number }}
+          ISSUE_URL: ${{ steps.reopen.outputs.url }}
+          ISSUE_STATUS: ${{ steps.reopen.outputs.status }}
+          ORIGINAL_NUMBER: ${{ steps.create.outputs.number }}
+          EXPECTED_STATUS: updated
+          EXPECTED_PHASE: reopened
+      - name: Create using scalar metadata and workflow input overrides
+        id: inputs
+        uses: ./
+        with:
+          filename: tests/integration/inputs.md
+          assignees: "{{ env.INTEGRATION_ASSIGNEE }}"
+          milestone: ${{ env.INTEGRATION_MILESTONE }}
+        env:
+          INTEGRATION_PHASE: inputs
+      - name: Verify scalar metadata and input precedence
+        run: node tests/integration/workflow.mjs verify
+        env:
+          ISSUE_NUMBER: ${{ steps.inputs.outputs.number }}
+          ISSUE_URL: ${{ steps.inputs.outputs.url }}
+          ISSUE_STATUS: ${{ steps.inputs.outputs.status }}
+          EXPECTED_STATUS: created
+          EXPECTED_PHASE: inputs
+          EXPECTED_LABELS: two
+      - name: Reject invalid front matter
+        id: invalid
+        continue-on-error: true
+        uses: ./
+        with:
+          filename: tests/integration/invalid-front-matter.md
+      - name: Reject a missing workspace include
+        id: missing
+        continue-on-error: true
+        uses: ./
+        with:
+          filename: tests/integration/missing-include.md
+      - name: Reject invalid workflow inputs
+        id: invalid_input
+        continue-on-error: true
+        uses: ./
+        with:
+          update_existing: invalid
+      - name: Verify expected failures and absence of duplicate mutations
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          for (const name of ['INVALID', 'MISSING', 'INVALID_INPUT']) {
+            assert.equal(process.env[`${name}_OUTCOME`], 'failure')
+            assert.equal(process.env[`${name}_NUMBER`], '')
+          }
+          NODE
+          node tests/integration/workflow.mjs audit
+        env:
+          INVALID_OUTCOME: ${{ steps.invalid.outcome }}
+          INVALID_NUMBER: ${{ steps.invalid.outputs.number }}
+          MISSING_OUTCOME: ${{ steps.missing.outcome }}
+          MISSING_NUMBER: ${{ steps.missing.outputs.number }}
+          INVALID_INPUT_OUTCOME: ${{ steps.invalid_input.outcome }}
+          INVALID_INPUT_NUMBER: ${{ steps.invalid_input.outputs.number }}
+      - name: Close integration issues even after failure
+        if: always() && (steps.prepare.outcome == 'success' || steps.prepare.outcome == 'failure' || steps.prepare.outcome == 'cancelled')
+        run: node tests/integration/workflow.mjs cleanup
+        env:
+          CREATED_NUMBER: ${{ steps.create.outputs.number }}
+          INPUTS_NUMBER: ${{ steps.inputs.outputs.number }}

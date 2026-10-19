@@ -21,7 +21,7 @@ Preserve the distinction between omitted `update_existing` and explicit `false`.
 
 Propagate operation errors to the entry point, retaining useful context and original API error details. Validate front matter before API requests. Follow the existing TypeScript style and avoid weakening types with `any` or unchecked casts.
 
-Add focused regression tests for behavior changes. Do not contact GitHub or upload workspace files from tests; mock API calls or the HTTP transport. Keep real-Octokit coverage for pagination and retries.
+Add focused regression tests for behavior changes. Unit tests must not contact GitHub or upload workspace files; mock API calls or the HTTP transport. Keep real-Octokit coverage for pagination and retries. The explicitly live CI job in `.github/workflows/ci.yml` is the exception: it builds this checkout and exercises disposable issues using `tests/integration/`. Its helper tests run offline with `node --test tests/integration/workflow.test.mjs`.
 
 ## Validation
 
