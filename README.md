@@ -8,6 +8,7 @@
   - [Escaping template content](#escaping-template-content)
   - [Issue types](#issue-types)
   - [Custom templates](#custom-templates)
+  - [Including workspace files](#including-workspace-files)
   - [Inputs](#inputs)
   - [Outputs](#outputs)
 
@@ -142,6 +143,41 @@ steps:
     with:
       filename: .github/some-other-template.md
 ```
+
+### Including workspace files
+
+Use Nunjucks' `include` tag to add a file from the workspace to the issue body. For example, generate `reports/report.md` in an earlier step:
+
+```yaml
+steps:
+  - uses: actions/checkout@v3
+  - name: Generate report
+    run: |
+      mkdir -p reports
+      printf '# Build report\nAll checks passed.\n' > reports/report.md
+  - uses: dblock/create-a-github-issue@v3
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      filename: .github/report-issue.md
+```
+
+Then reference that file in `.github/report-issue.md`:
+
+```markdown
+---
+title: Build report
+---
+Results for {{ repo.owner }}/{{ repo.repo }}:
+
+{% include "reports/report.md" %}
+```
+
+Include paths are relative to `GITHUB_WORKSPACE`, or the current working directory if that variable is unset, not the issue template's directory. Within an included file, paths beginning with `./` or `../` resolve relative to that file.
+
+Included files are rendered as Nunjucks templates with the same variables and filters as the main template. To preserve literal `{{ ... }}` in a report, wrap that content in `{% raw %}` and `{% endraw %}` inside the included file. Only the main template's YAML front matter is parsed; any front matter in an included file becomes part of the body.
+
+A missing included file fails the action before any issue is created or updated. File contents are published in the issue body, so include only files intended for that audience and keep GitHub's issue body size limit in mind.
 
 ### Inputs
 

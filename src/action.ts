@@ -69,7 +69,8 @@ export async function createAnIssue () {
   }
   const reopenExisting = reopenExistingInput === 'true'
 
-  const env = nunjucks.configure({ autoescape: false })
+  const workspace = process.env.GITHUB_WORKSPACE || process.cwd()
+  const env = nunjucks.configure(workspace, { autoescape: false })
   env.addFilter('date', dateFilter)
 
   const templateVariables = {
@@ -80,7 +81,6 @@ export async function createAnIssue () {
   }
 
   // Get the file
-  const workspace = process.env.GITHUB_WORKSPACE || process.cwd()
   const templatePath = path.join(workspace, template)
   core.debug(`Reading from file ${templatePath}`)
   const file = await fs.readFile(templatePath, 'utf8')

@@ -117,6 +117,34 @@ describe('create-a-github-issue', () => {
     expect(mockInfo).toHaveBeenCalledWith(expect.stringContaining('Created issue'))
   })
 
+  it.each(['created', 'updated'])('includes workspace files and nested templates in a %s issue', async status => {
+    process.env.INPUT_FILENAME = '.github/include.md'
+    if (status === 'updated') {
+      process.env.INPUT_UPDATE_EXISTING = 'true'
+      mockSearchIssuesAndPullRequests.mockResolvedValue({
+        data: { items: [{ number: 42, title: 'Included report', html_url: 'www' }] }
+      })
+    }
+
+    await createAnIssue()
+
+    expect(params.body).toContain('Report:\n# JasonEtco/waddup\nResult: FOO\nNested report details.')
+    expect(mockSetOutput).toHaveBeenCalledWith('status', status)
+    expect(mockSetFailed).not.toHaveBeenCalled()
+  })
+
+  it('fails before searching or changing issues when an included workspace file is missing', async () => {
+    process.env.INPUT_FILENAME = '.github/missing-include.md'
+    process.env.INPUT_UPDATE_EXISTING = 'true'
+
+    await expect(createAnIssue()).rejects.toThrow('template not found: reports/missing.md')
+
+    expect(mockSearchIssuesAndPullRequests).not.toHaveBeenCalled()
+    expect(mockIssuesCreate).not.toHaveBeenCalled()
+    expect(mockIssuesUpdate).not.toHaveBeenCalled()
+    expect(mockSetOutput).not.toHaveBeenCalled()
+  })
+
   it('creates an issue in the target repository without changing template context', async () => {
     process.env.INPUT_REPO = 'another-owner/another-repo'
     process.env.INPUT_FILENAME = '.github/context-repo-template.md'

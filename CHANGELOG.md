@@ -1,5 +1,6 @@
 ### 3.4.2 (Next)
 
+* [#165](https://github.com/JasonEtco/create-an-issue/issues/165): Resolve Nunjucks includes from the workspace and document adding generated reports to issue bodies - [@dblock](https://github.com/dblock).
 * [#170](https://github.com/JasonEtco/create-an-issue/issues/170), [#155](https://github.com/JasonEtco/create-an-issue/issues/155): Document literal Nunjucks syntax and YAML quoting for titles beginning with backticks - [@dblock](https://github.com/dblock).
 * [#39](https://github.com/dblock/create-a-github-issue/issues/39): Retry GitHub API rate limits with bounded, header-aware delays - [@dblock](https://github.com/dblock).
 * [#162](https://github.com/JasonEtco/create-an-issue/issues/162): Add opt-in reopening of matched closed issues with reopen_existing - [@dblock](https://github.com/dblock).
