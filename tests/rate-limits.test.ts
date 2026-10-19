@@ -107,12 +107,12 @@ describe('GitHub rate limits', () => {
     const { createAnIssue } = await import('../src/action')
 
     const action = createAnIssue()
+    const rejection = expect(action).rejects.toThrow('secondary rate limit')
     await jest.advanceTimersByTimeAsync(10000)
-    await action
+    await rejection
 
     expect(fetch).toHaveBeenCalledTimes(3)
     expect(mockWarning).toHaveBeenCalledWith('GitHub rate limit reached; no retries remaining.')
-    expect(mockSetFailed).toHaveBeenCalled()
   })
 
   it('does not retry a permission error', async () => {
@@ -122,11 +122,11 @@ describe('GitHub rate limits', () => {
     const { createAnIssue } = await import('../src/action')
 
     const action = createAnIssue()
+    const rejection = expect(action).rejects.toThrow('Resource not accessible by integration')
     await jest.advanceTimersByTimeAsync(10000)
-    await action
+    await rejection
 
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(mockWarning).not.toHaveBeenCalled()
-    expect(mockSetFailed).toHaveBeenCalled()
   })
 })
