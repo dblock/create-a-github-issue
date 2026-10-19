@@ -74,6 +74,8 @@ Please follow up on this issue.
 
 The `assignees` input takes precedence over front matter, for example `assignees: "{{ env.ASSIGNEE }}"`. Set `ASSIGNEE` in the workflow's `env` block to the GitHub username to assign.
 
+Front matter requires a string `title`. Optional `type` must be a string; `assignees`, `labels`, and `projects` accept a string or a list of strings; `milestone` accepts a string or number. Invalid field types fail before any GitHub API requests. Quote values that YAML would otherwise interpret as numbers or booleans.
+
 Note that you can only assign people matching given [conditions](https://help.github.com/en/github/managing-your-work-on-github/assigning-issues-and-pull-requests-to-other-github-users).
 
 GitHub API requests automatically retry up to twice when a primary or secondary rate limit is reached. The action logs each retry and waits until the primary limit resets or for the secondary limit's `Retry-After` delay (60 seconds if no delay is provided). If retries are exhausted, the action fails; permission errors are not retried.

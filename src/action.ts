@@ -7,7 +7,7 @@ import fm from 'front-matter'
 import nunjucks from 'nunjucks'
 // @ts-ignore
 import dateFilter from 'nunjucks-date-filter'
-import { FrontMatterAttributes, IssueStatus, listToArray, setOutputs } from './helpers'
+import { IssueStatus, listToArray, readBooleanInput, setOutputs, validateFrontMatter } from './helpers'
 import { addIssueToProjects, resolveProject } from './projects'
 import { findExistingIssue } from './issues'
 
@@ -41,23 +41,8 @@ export async function createAnIssue () {
     throw new Error(`Invalid value search_existing=${searchExistingType}, must be one of open, closed or all`)
   }
 
-  const updateExistingInput = core.getInput('update_existing')
-  let updateExisting: Boolean | null = null
-  if (updateExistingInput) {
-    if (updateExistingInput === 'true') {
-      updateExisting = true
-    } else if (updateExistingInput === 'false') {
-      updateExisting = false
-    } else {
-      throw new Error(`Invalid value update_existing=${updateExistingInput}, must be one of true or false`)
-    }
-  }
-
-  const reopenExistingInput = core.getInput('reopen_existing') || 'false'
-  if (!['true', 'false'].includes(reopenExistingInput)) {
-    throw new Error(`Invalid value reopen_existing=${reopenExistingInput}, must be one of true or false`)
-  }
-  const reopenExisting = reopenExistingInput === 'true'
+  const updateExisting = readBooleanInput('update_existing')
+  const reopenExisting = readBooleanInput('reopen_existing') ?? false
 
   const workspace = process.env.GITHUB_WORKSPACE || process.cwd()
   const env = nunjucks.configure(workspace, { autoescape: false })
@@ -76,14 +61,12 @@ export async function createAnIssue () {
   const file = await fs.readFile(templatePath, 'utf8')
 
   // Grab the front matter as JSON
-  const { attributes, body } = fm<FrontMatterAttributes>(file)
+  const { attributes, body } = fm<unknown>(file)
+  validateFrontMatter(attributes, template)
   core.info(`Front matter for ${template} is ${JSON.stringify(attributes)}`)
   const projectUrls = attributes.projects === undefined
     ? []
     : Array.isArray(attributes.projects) ? attributes.projects : [attributes.projects]
-  if (projectUrls.some(url => typeof url !== 'string')) {
-    throw new Error(`The projects field in ${template} must be a Projects v2 URL or a list of URLs.`)
-  }
 
   const templated = {
     body: env.renderString(body, templateVariables),
