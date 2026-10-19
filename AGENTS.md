@@ -2,7 +2,7 @@
 
 ## Project
 
-This is a TypeScript ESM GitHub Action running on Node.js 24. Use npm and keep `package-lock.json` synchronized with dependency changes. Some instructions in `CONTRIBUTING.md` refer to an unrelated Ruby project; use the commands and layout below for this repository.
+This is a TypeScript ESM GitHub Action running on Node.js 24. See `CONTRIBUTING.md` for setup, development commands, and the contribution workflow.
 
 ## Layout
 
@@ -25,14 +25,7 @@ Add focused regression tests for behavior changes. Unit tests must not contact G
 
 ## Validation
 
-Install dependencies with `npm ci` when needed. Before committing code changes, run the relevant tests and type-check:
-
-```sh
-npx tsc --noEmit
-npm test -- --runInBand
-```
-
-For a targeted run, append test paths to the test command. Run `npm run build` for production-code or dependency changes. Do not commit generated `dist/`, coverage output, or `node_modules/`. Documentation-only edits do not require tests.
+Follow the validation commands in `CONTRIBUTING.md` before committing code changes. Run targeted tests when sufficient and build production-code or dependency changes.
 
 ## Documentation and pull requests
 

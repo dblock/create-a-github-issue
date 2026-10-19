@@ -3,6 +3,7 @@
 <p align="center"><a href="https://github.com/dblock/create-a-github-issue"><img alt="GitHub Actions status" src="https://github.com/dblock/create-a-github-issue/workflows/Node%20CI/badge.svg"></a> <a href="https://codecov.io/gh/dblock/create-a-github-issue/"><img src="https://codecov.io/gh/dblock/create-a-github-issue/branch/main/graph/badge.svg?token=9wHcESNsRI" alt="Codecov"></a></p>
 
 - [Fork](#fork)
+- [Contributing](CONTRIBUTING.md)
 - [Usage](#usage)
   - [Dates](#dates)
   - [Escaping template content](#escaping-template-content)
@@ -15,6 +16,8 @@
 ## Fork
 
 This is a maintained fork of [JasonEtco/create-an-issue](https://github.com/JasonEtco/create-an-issue). See [CHANGELOG](CHANGELOG.md) for fixes and features.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing, and contribution guidelines.
 
 ## Usage
 
