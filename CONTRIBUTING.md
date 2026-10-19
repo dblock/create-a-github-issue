@@ -1,125 +1,96 @@
-# Contributing to Fue
+# Contributing to Create a GitHub Issue
 
-This project is work of [many contributors](https://github.com/dblock/create-a-github-issue/graphs/contributors).
+Contributions, [bug reports](https://github.com/dblock/create-a-github-issue/issues), and [pull requests](https://github.com/dblock/create-a-github-issue/pulls) are welcome.
 
-You're encouraged to submit [pull requests](https://github.com/dblock/create-a-github-issue/pulls), [propose features and discuss issues](https://github.com/dblock/create-a-github-issue/issues).
+## Getting started
 
-In the examples below, substitute your GitHub username for `contributor` in URLs.
+Fork [dblock/create-a-github-issue](https://github.com/dblock/create-a-github-issue), then clone your fork. Substitute your GitHub username for `contributor`:
 
-### Fork the Project
-
-Fork the [project on GitHub](https://github.com/dblock/fue) and check out your copy.
-
-```
-git clone https://github.com/contributor/fue.git
-cd fue
-git remote add upstream https://github.com/dblock/fue.git
-```
-
-### Bundle Install and Test
-
-Ensure that you can build the project and run tests.
-
-```
-bundle install
-bundle exec rake
+```sh
+git clone https://github.com/contributor/create-a-github-issue.git
+cd create-a-github-issue
+git remote add upstream https://github.com/dblock/create-a-github-issue.git
+git switch main
+git pull --ff-only upstream main
+git switch -c my-feature-branch
 ```
 
-## Contribute Code
+Use Node.js 24 and npm:
 
-### Create a Topic Branch
-
-Make sure your fork is up-to-date and create a topic branch for your feature or bug fix.
-
-```
-git checkout master
-git pull upstream master
-git checkout -b my-feature-branch
+```sh
+npm ci
 ```
 
-### Write Tests
+## Development
 
-Try to write a test that reproduces the problem you're trying to fix or describes a feature that you want to build. Add tests to [spec](spec).
+This is a TypeScript ESM GitHub Action. Production code lives in `src/`, Jest tests and template fixtures in `tests/`, and public action metadata in `action.yml`. Follow the existing code style, preserve defaults, and keep changes focused.
 
-We definitely appreciate pull requests that highlight or reproduce a problem, even without a fix.
+Add focused regression tests for behavior changes. Unit tests must not contact GitHub; mock API calls or HTTP transport. The search and rate-limit suites exercise the real Octokit client against mocked HTTP responses.
 
-### Write Code
+Before committing code changes, type-check, run the relevant tests, and build production-code or dependency changes:
 
-Implement your feature or bug fix.
-
-Ruby style is enforced with [Rubocop](https://github.com/bbatsov/rubocop). Run `bundle exec rubocop` and fix any style issues highlighted, auto-correct issues when possible with `bundle exec rubocop -a`. To silence generally ignored issues, including line lengths or code complexity metrics, run `bundle exec rubocop --auto-gen-config`.
-
-Make sure that `bundle exec rake` completes without errors.
-
-### Write Documentation
-
-Document any external behavior in the [README](README.md).
-
-### Update Changelog
-
-Add a line to [CHANGELOG](CHANGELOG.md) under *Next Release*. Don't remove *Your contribution here*.
-
-Make it look like every other line, including a link to the issue being fixed, your name and link to your Github account.
-
-### Commit Changes
-
-Make sure git knows your name and email address:
-
-```
-git config --global user.name "Your Name"
-git config --global user.email "contributor@example.com"
+```sh
+npx tsc --noEmit
+npm test -- --runInBand
+npm run build
 ```
 
-Writing good commit logs is important. A commit log should describe what changed and why.
+For a targeted test run, append test paths, for example:
 
+```sh
+npm test -- --runInBand tests/existing-issues.test.ts
 ```
-git add ...
+
+Keep `package-lock.json` synchronized with dependency changes. Do not commit generated `dist/`, coverage output, or `node_modules/`. Documentation-only changes do not require tests.
+
+CI runs the offline suite on pull requests and pushes to `main`; check the [Node CI workflow](.github/workflows/ci.yml) for the current configuration.
+
+### Live integration tests
+
+The live integration workflow introduced in [#210](https://github.com/dblock/create-a-github-issue/pull/210) builds the checked-out action and runs it with `uses: ./` after offline checks pass. It exercises create-on-no-match, find-without-update, open/closed/all searches, closed updates without reopening, reopening, and unconditional creation. It verifies number/URL/status outputs, special-character titles, list/scalar metadata, assignee/milestone input precedence, labels, dates, filters, literal template delimiters, and generated nested workspace includes. Expected-failure steps cover invalid front matter, invalid workflow inputs, and missing includes. Search indexing is polled for up to approximately 150 seconds before open/closed matching.
+
+The live job uses job-scoped `contents: read` and `issues: write` permissions with the workflow token. It runs on `main` pushes, same-repository PRs other than Dependabot runs, and manual `workflow_dispatch` runs. Fork and Dependabot PRs receive offline checks only, with live coverage after merging. It does not use `pull_request_target` or personal tokens.
+
+Cleanup runs even after setup failures, closes matching test issues, retains the `action-integration` label, and deletes run-specific labels and milestones. It discovers resources through action outputs and unique run ID/attempt names and body markers without relying on search indexing. Closed issues remain searchable by `label:action-integration` as an audit trail and link to their workflow run. Forced runner termination or GitHub outages may prevent cleanup; clean up that run's resources manually if needed.
+
+Organization issue types are excluded because this repository is user-owned. Cross-repository writes require separate credentials and remain offline-tested; the explicit `repo` input is exercised against the workflow repository. Search pagination/incomplete results and rate-limit retries remain offline-tested rather than manufacturing large issue sets or exhausting API limits.
+
+Run the integration helper tests offline with:
+
+```sh
+node --test tests/integration/workflow.test.mjs
+```
+
+Do not run live helper commands locally unless you intend to modify real issues.
+
+## Documentation and changelog
+
+Document user-facing behavior in [README.md](README.md), and update `action.yml` when changing public inputs or outputs. Keep Markdown prose unwrapped.
+
+Add an entry under the current `(Next)` heading in [CHANGELOG.md](CHANGELOG.md). Preserve existing entries and `Your contribution here.` Include a linked issue or PR number and contributor attribution. Once the PR is open, add its number:
+
+```markdown
+* [#123](https://github.com/dblock/create-a-github-issue/pull/123): Describe the change - [@contributor](https://github.com/contributor).
+```
+
+## Pull requests
+
+Use focused commits describing what changed and why, then push your topic branch:
+
+```sh
+git add <changed-files>
 git commit
+git push -u origin my-feature-branch
 ```
 
-### Push
+Open a pull request against `dblock/create-a-github-issue`'s `main` branch. Describe the behavior change and validation performed, and link related issues. Review the GitHub Actions checks and address failures.
 
-```
-git push origin my-feature-branch
-```
+If your branch needs updating, rebase onto the latest upstream `main`:
 
-### Make a Pull Request
-
-Go to https://github.com/contributor/fue and select your feature branch. Click the 'Pull Request' button and fill out the form. Pull requests are usually reviewed within a few days.
-
-### Update CHANGELOG Again
-
-Update the [CHANGELOG](CHANGELOG.md) with the pull request number. A typical entry looks as follows.
-
-```
-* [#123](https://github.com/dblock/create-a-github-issue/pull/123): Reticulated splines - [@contributor](https://github.com/contributor).
-```
-
-Amend your previous commit and force push the changes.
-
-```
-git commit --amend
-git push origin my-feature-branch -f
-```
-
-### Rebase
-
-If you've been working on a change for a while, rebase with upstream/master.
-
-```
+```sh
 git fetch upstream
-git rebase upstream/master
-git push origin my-feature-branch -f
+git rebase upstream/main
+git push --force-with-lease origin my-feature-branch
 ```
 
-### Check on Your Pull Request
-
-Go back to your pull request after a few minutes and see whether it passed muster with Travis-CI. Everything should look green, otherwise fix issues and amend your commit as described above.
-
-### Be Patient
-
-It's likely that your change will not be merged and that the nitpicky maintainers will ask you to do more, or fix seemingly benign problems. Hang on there!
-
-## Thank You
-
-Please do know that we really appreciate and value your time and work. We love you, really.
+Never force-push `main`. Retain separate commits when requested by the maintainer. See [RELEASING.md](RELEASING.md) for release instructions; do not create releases or tags as part of an ordinary contribution.
