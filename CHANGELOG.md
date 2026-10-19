@@ -1,5 +1,6 @@
 ### 3.4.2 (Next)
 
+* [#110](https://github.com/dblock/create-a-github-issue/issues/110): Support template variables in front matter assignees and the assignees input - [@dblock](https://github.com/dblock).
 * [#190](https://github.com/dblock/create-a-github-issue/pull/190): Updated dependencies while keeping TypeScript compatible with ts-jest - [@dblock](https://github.com/dblock).
 * Your contribution here.
 

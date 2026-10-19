@@ -58,6 +58,18 @@ You'll notice that the above example has some `{{ mustache }}` variables. Your i
 Environment variables are pretty {{ env.ADJECTIVE }}, right?
 ```
 
+Assignees support the same template variables and filters, in both front matter and the `assignees` input. Front matter accepts a comma-separated string or a YAML list. Quote template expressions so they are valid YAML:
+
+```markdown
+---
+title: Follow up
+assignees: "{{ env.ASSIGNEE }}, {{ repo.owner }}"
+---
+Please follow up on this issue.
+```
+
+The `assignees` input takes precedence over front matter, for example `assignees: "{{ env.ASSIGNEE }}"`. Set `ASSIGNEE` in the workflow's `env` block to the GitHub username to assign.
+
 Note that you can only assign people matching given [conditions](https://help.github.com/en/github/managing-your-work-on-github/assigning-issues-and-pull-requests-to-other-github-users).
 
 ### Dates
