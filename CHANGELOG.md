@@ -1,3 +1,7 @@
+### 3.5.1 (Next)
+
+* Your contribution here.
+
 ### 3.5.0 (2026/10/19)
 
 * [#224](https://github.com/dblock/create-a-github-issue/pull/224): Correct project names and Node.js development instructions in the contribution guide - [@dblock](https://github.com/dblock).
