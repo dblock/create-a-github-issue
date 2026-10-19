@@ -36,3 +36,5 @@ outputs:
     description: Number of the issue that was created.
   url:
     description: URL of the issue that was created.
+  status:
+    description: Whether the issue was created, updated, or found without updating.
