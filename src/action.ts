@@ -24,6 +24,14 @@ function logError(template: string, action: 'creating' | 'updating', err: any) {
 export async function createAnIssue () {
   const template = core.getInput('filename') || '.github/ISSUE_TEMPLATE.md'
   const assignees = core.getInput('assignees')
+  const context = github.context
+  const targetRepository = core.getInput('repo') || `${context.repo.owner}/${context.repo.repo}`
+  const [owner, repo, ...extra] = targetRepository.split('/')
+  if (!owner || !repo || extra.length || /\s/.test(targetRepository)) {
+    core.setFailed(`Invalid value repo=${targetRepository}, must be in owner/repo format`)
+    return
+  }
+  const repository = { owner, repo }
 
   const searchExistingType: string = core.getInput('search_existing') || 'open'
   if (!['open', 'closed', 'all'].includes(searchExistingType)) {
@@ -47,7 +55,6 @@ export async function createAnIssue () {
   const env = nunjucks.configure({ autoescape: false })
   env.addFilter('date', dateFilter)
 
-  const context = github.context
   const templateVariables = {
     ...context,
     repo: context.repo,
@@ -80,7 +87,7 @@ export async function createAnIssue () {
     core.info(`Fetching ${searchExistingType} issues with title "${templated.title}"`)
     const searchExistingQuery = (searchExistingType === 'all') ? '' : `is:${searchExistingType} `
     const existingIssues = await octokit.rest.search.issuesAndPullRequests({
-      q: `${searchExistingQuery}is:issue repo:${process.env.GITHUB_REPOSITORY} in:title ${templated.title}`
+      q: `${searchExistingQuery}is:issue repo:${owner}/${repo} in:title ${templated.title}`
     })
     const existingIssue = existingIssues.data.items.find(issue => issue.title === templated.title)
     if (existingIssue) {
@@ -92,7 +99,7 @@ export async function createAnIssue () {
         try {
           core.info(`Updating existing issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url}`)
           await octokit.rest.issues.update({
-            ...context.repo,
+            ...repository,
             issue_number: existingIssue.number,
             body: templated.body
           })
@@ -112,7 +119,7 @@ export async function createAnIssue () {
   core.info(`Creating new issue ${templated.title}`)
   try {
     const issue = await octokit.rest.issues.create({
-      ...context.repo,
+      ...repository,
       ...templated,
       milestone: Number(core.getInput('milestone') || attributes.milestone) || undefined
     })

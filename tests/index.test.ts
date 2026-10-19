@@ -85,6 +85,7 @@ describe('create-a-github-issue', () => {
     delete process.env.INPUT_SEARCH_EXISTING
     delete process.env.INPUT_ASSIGNEES
     delete process.env.INPUT_MILESTONE
+    delete process.env.INPUT_REPO
 
     // Simulate an environment variable added for the action
     process.env.EXAMPLE = 'foo'
@@ -112,6 +113,53 @@ describe('create-a-github-issue', () => {
     expect(params).toMatchSnapshot()
     expect(mockInfo).toHaveBeenCalledWith(expect.stringContaining('Created issue'))
   })
+
+  it('creates an issue in the target repository without changing template context', async () => {
+    process.env.INPUT_REPO = 'another-owner/another-repo'
+    process.env.INPUT_FILENAME = '.github/context-repo-template.md'
+
+    await createAnIssue()
+
+    expect(params).toMatchObject({ owner: 'another-owner', repo: 'another-repo' })
+    expect(params.body).toContain('https://JasonEtco.github.io/waddup/')
+  })
+
+  it.each(['true', 'false'])('searches the target repository with update_existing=%s', async updateExisting => {
+    process.env.INPUT_REPO = 'another-owner/another-repo'
+    process.env.INPUT_UPDATE_EXISTING = updateExisting
+    mockSearchIssuesAndPullRequests.mockResolvedValue({
+      data: { items: [{ number: 42, title: 'Hello!', html_url: 'www' }] }
+    })
+
+    await createAnIssue()
+
+    expect(mockSearchIssuesAndPullRequests).toHaveBeenCalledWith({
+      q: 'is:open is:issue repo:another-owner/another-repo in:title Hello!'
+    })
+    expect(mockIssuesCreate).not.toHaveBeenCalled()
+    if (updateExisting === 'true') {
+      expect(mockIssuesUpdate).toHaveBeenCalledWith(expect.objectContaining({
+        owner: 'another-owner', repo: 'another-repo', issue_number: 42
+      }))
+    } else {
+      expect(mockIssuesUpdate).not.toHaveBeenCalled()
+      expect(mockSetOutput).toHaveBeenCalledWith('status', 'found')
+    }
+  })
+
+  it.each(['repository', '/repo', 'owner/', 'owner/repo/extra', 'owner/re po'])(
+    'rejects invalid target repository %s before making API requests',
+    async repository => {
+      process.env.INPUT_REPO = repository
+
+      await createAnIssue()
+
+      expect(mockSetFailed).toHaveBeenCalledWith(`Invalid value repo=${repository}, must be in owner/repo format`)
+      expect(mockIssuesCreate).not.toHaveBeenCalled()
+      expect(mockIssuesUpdate).not.toHaveBeenCalled()
+      expect(mockSearchIssuesAndPullRequests).not.toHaveBeenCalled()
+    }
+  )
 
   it('creates a new issue with some template variables', async () => {
     process.env.INPUT_FILENAME = '.github/variables.md'
