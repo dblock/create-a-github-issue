@@ -20,17 +20,9 @@ function retryRateLimit(retryAfter: number, _options: unknown, _octokit: unknown
   return true
 }
 
-function logError(template: string, action: 'creating' | 'updating', err: any) {
-  // Log the error message
-  const errorMessage = `An error occurred while ${action} the issue or adding it to a project. Check the title, labels, and assignees in ${template}, and the token's project permissions if a project is configured.`
-  core.error(errorMessage)
-  core.error(err)
-
-  // The error might have more details
-  if (err.errors) core.error(JSON.stringify(err.errors))
-
-  // Exit with a failing status
-  core.setFailed(errorMessage + '\n\n' + err.message)
+function issueError(template: string, action: 'creating' | 'updating', cause: unknown) {
+  const message = cause instanceof Error ? cause.message : String(cause)
+  return new Error(`An error occurred while ${action} the issue or adding it to a project. Check the title, labels, and assignees in ${template}, and the token's project permissions if a project is configured.\n\n${message}`, { cause })
 }
 
 export async function createAnIssue () {
@@ -40,15 +32,13 @@ export async function createAnIssue () {
   const targetRepository = core.getInput('repo') || `${context.repo.owner}/${context.repo.repo}`
   const [owner, repo, ...extra] = targetRepository.split('/')
   if (!owner || !repo || extra.length || /\s/.test(targetRepository)) {
-    core.setFailed(`Invalid value repo=${targetRepository}, must be in owner/repo format`)
-    return
+    throw new Error(`Invalid value repo=${targetRepository}, must be in owner/repo format`)
   }
   const repository = { owner, repo }
 
   const searchExistingType: string = core.getInput('search_existing') || 'open'
   if (!['open', 'closed', 'all'].includes(searchExistingType)) {
-    core.setFailed(`Invalid value search_existing=${core.getInput('search_existing')}, must be one of open, closed or all`)
-    return
+    throw new Error(`Invalid value search_existing=${searchExistingType}, must be one of open, closed or all`)
   }
 
   const updateExistingInput = core.getInput('update_existing')
@@ -59,15 +49,13 @@ export async function createAnIssue () {
     } else if (updateExistingInput === 'false') {
       updateExisting = false
     } else {
-      core.setFailed(`Invalid value update_existing=${updateExistingInput}, must be one of true or false`)
-      return
+      throw new Error(`Invalid value update_existing=${updateExistingInput}, must be one of true or false`)
     }
   }
 
   const reopenExistingInput = core.getInput('reopen_existing') || 'false'
   if (!['true', 'false'].includes(reopenExistingInput)) {
-    core.setFailed(`Invalid value reopen_existing=${reopenExistingInput}, must be one of true or false`)
-    return
+    throw new Error(`Invalid value reopen_existing=${reopenExistingInput}, must be one of true or false`)
   }
   const reopenExisting = reopenExistingInput === 'true'
 
@@ -138,8 +126,8 @@ export async function createAnIssue () {
           setOutputs(existingIssue, 'updated')
           core.info(`Updated issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url}`)
           return
-        } catch (err: any) {
-          return logError(template, 'updating', err)
+        } catch (err) {
+          throw issueError(template, 'updating', err)
         }
       }
     } else {
@@ -159,7 +147,7 @@ export async function createAnIssue () {
     await addIssueToProjects(octokit, projects, issue.data)
     setOutputs(issue.data, 'created')
     core.info(`Created issue ${issue.data.title}#${issue.data.number}: ${issue.data.html_url}`)
-  } catch (err: any) {
-    return logError(template, 'creating', err)
+  } catch (err) {
+    throw issueError(template, 'creating', err)
   }
 }

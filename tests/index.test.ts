@@ -260,10 +260,9 @@ describe('create-a-github-issue', () => {
         .mockResolvedValueOnce({ owner: { projectV2: { id: 'PVT_project' } } })
         .mockRejectedValueOnce(new Error('Project write access denied'))
 
-      await createAnIssue()
+      await expect(createAnIssue()).rejects.toThrow('Project write access denied')
 
       expect(mockIssuesCreate).toHaveBeenCalledTimes(1)
-      expect(mockSetFailed).toHaveBeenCalledWith(expect.stringContaining('Project write access denied'))
       expect(mockSetOutput).not.toHaveBeenCalled()
     })
 
@@ -272,9 +271,8 @@ describe('create-a-github-issue', () => {
         .mockResolvedValueOnce({ owner: { projectV2: { id: 'PVT_project' } } })
         .mockResolvedValueOnce({ addProjectV2ItemById: { item: null } })
 
-      await createAnIssue()
+      await expect(createAnIssue()).rejects.toThrow('GitHub did not confirm adding issue #1')
 
-      expect(mockSetFailed).toHaveBeenCalledWith(expect.stringContaining('GitHub did not confirm adding issue #1'))
       expect(mockSetOutput).not.toHaveBeenCalled()
     })
 
@@ -333,11 +331,10 @@ describe('create-a-github-issue', () => {
           .mockResolvedValueOnce({ addProjectV2ItemById: { item: { id: 'PVTI_first' } } })
           .mockRejectedValueOnce(new Error('Second project write access denied'))
 
-        await createAnIssue()
+        await expect(createAnIssue()).rejects.toThrow('Second project write access denied')
 
         expect(mockGraphql).toHaveBeenCalledTimes(4)
         expect(mockInfo).toHaveBeenCalledWith('Added issue #1 to project https://github.com/orgs/JasonEtco/projects/7')
-        expect(mockSetFailed).toHaveBeenCalledWith(expect.stringContaining('Second project write access denied'))
         expect(mockSetOutput).not.toHaveBeenCalled()
       })
 
@@ -392,9 +389,7 @@ describe('create-a-github-issue', () => {
     async repository => {
       process.env.INPUT_REPO = repository
 
-      await createAnIssue()
-
-      expect(mockSetFailed).toHaveBeenCalledWith(`Invalid value repo=${repository}, must be in owner/repo format`)
+      await expect(createAnIssue()).rejects.toThrow(`Invalid value repo=${repository}, must be in owner/repo format`)
       expect(mockIssuesCreate).not.toHaveBeenCalled()
       expect(mockIssuesUpdate).not.toHaveBeenCalled()
       expect(mockSearchIssuesAndPullRequests).not.toHaveBeenCalled()
@@ -517,15 +512,13 @@ describe('create-a-github-issue', () => {
   it('checks the value of update_existing', async () => {
     process.env.INPUT_UPDATE_EXISTING = 'invalid'
 
-    await createAnIssue()
-    expect(mockSetFailed).toHaveBeenCalledWith('Invalid value update_existing=invalid, must be one of true or false')
+    await expect(createAnIssue()).rejects.toThrow('Invalid value update_existing=invalid, must be one of true or false')
   })
 
   it('checks the value of search_existing', async () => {
     process.env.INPUT_SEARCH_EXISTING = 'invalid'
 
-    await createAnIssue()
-    expect(mockSetFailed).toHaveBeenCalledWith('Invalid value search_existing=invalid, must be one of open, closed or all')
+    await expect(createAnIssue()).rejects.toThrow('Invalid value search_existing=invalid, must be one of open, closed or all')
   })
 
   it('updates an existing closed issue with the same title', async () => {
@@ -580,9 +573,7 @@ describe('create-a-github-issue', () => {
   it('rejects invalid reopen_existing values', async () => {
     process.env.INPUT_REOPEN_EXISTING = 'invalid'
 
-    await createAnIssue()
-
-    expect(mockSetFailed).toHaveBeenCalledWith('Invalid value reopen_existing=invalid, must be one of true or false')
+    await expect(createAnIssue()).rejects.toThrow('Invalid value reopen_existing=invalid, must be one of true or false')
     expect(mockIssuesUpdate).not.toHaveBeenCalled()
     expect(mockIssuesCreate).not.toHaveBeenCalled()
     expect(mockSearchIssuesAndPullRequests).not.toHaveBeenCalled()
@@ -612,40 +603,31 @@ describe('create-a-github-issue', () => {
 
     process.env.INPUT_UPDATE_EXISTING = 'true'
 
-    await createAnIssue()
-    expect(mockSetFailed).toHaveBeenCalled()
+    await expect(createAnIssue()).rejects.toThrow('Updating issue failed')
   })
 
-  it('logs a helpful error if creating an issue throws an error', async () => {
+  it('rejects with context if creating an issue fails', async () => {
     mockIssuesCreate.mockRejectedValue(new Error('Validation error'))
 
-    await createAnIssue()
-    expect(mockError).toHaveBeenCalled()
-    expect(mockSetFailed).toHaveBeenCalled()
+    await expect(createAnIssue()).rejects.toThrow('Validation error')
   })
 
-  it('logs a helpful error if creating an issue throws an error with more errors', async () => {
-    const error = new Error('Validation error') as any
-    error.errors = [{ foo: true }]
+  it('preserves API error details if creating an issue fails', async () => {
+    const error = Object.assign(new Error('Validation error'), { errors: [{ foo: true }] })
     mockIssuesCreate.mockRejectedValue(error)
 
-    await createAnIssue()
-    expect(mockError).toHaveBeenCalled()
-    expect(mockSetFailed).toHaveBeenCalled()
+    await expect(createAnIssue()).rejects.toMatchObject({ cause: error })
   })
 
-  it('logs a helpful error if updating an issue throws an error with more errors', async () => {
+  it('preserves API error details if updating an issue fails', async () => {
     mockSearchIssuesAndPullRequests.mockResolvedValue({
       data: { items: [{ number: 1, title: 'Hello!' }] }
     })
-    const error = new Error('Validation error') as any
-    error.errors = [{ foo: true }]
+    const error = Object.assign(new Error('Validation error'), { errors: [{ foo: true }] })
     mockIssuesUpdate.mockRejectedValue(error)
 
     process.env.INPUT_UPDATE_EXISTING = 'true'
 
-    await createAnIssue()
-    expect(mockError).toHaveBeenCalled()
-    expect(mockSetFailed).toHaveBeenCalled()
+    await expect(createAnIssue()).rejects.toMatchObject({ cause: error })
   })
 })
