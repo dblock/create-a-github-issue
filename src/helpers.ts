@@ -9,6 +9,33 @@ export interface FrontMatterAttributes {
   milestone?: string | number
 }
 
+export function validateFrontMatter(attributes: unknown, template: string): asserts attributes is FrontMatterAttributes {
+  if (typeof attributes !== 'object' || attributes === null || !('title' in attributes) || typeof attributes.title !== 'string') {
+    throw new Error(`The title field in ${template} must be a string.`)
+  }
+  for (const [field, value] of Object.entries(attributes)) {
+    if (value === undefined) continue
+    if (['projects', 'assignees', 'labels'].includes(field)) {
+      if (typeof value !== 'string' && !(Array.isArray(value) && value.every(item => typeof item === 'string'))) {
+        const expected = field === 'projects' ? 'a Projects v2 URL or a list of URLs' : 'a string or a list of strings'
+        throw new Error(`The ${field} field in ${template} must be ${expected}.`)
+      }
+    } else if (field === 'type' && typeof value !== 'string') {
+      throw new Error(`The type field in ${template} must be a string.`)
+    } else if (field === 'milestone' && typeof value !== 'string' && typeof value !== 'number') {
+      throw new Error(`The milestone field in ${template} must be a string or a number.`)
+    }
+  }
+}
+
+export function readBooleanInput(name: string): boolean | null {
+  const value = core.getInput(name)
+  if (!value) return null
+  if (value === 'true') return true
+  if (value === 'false') return false
+  throw new Error(`Invalid value ${name}=${value}, must be one of true or false`)
+}
+
 export type IssueStatus = 'created' | 'updated' | 'found'
 
 export function setOutputs (issue: { number: number, html_url: string }, status: IssueStatus) {
