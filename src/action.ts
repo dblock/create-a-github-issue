@@ -9,6 +9,7 @@ import nunjucks from 'nunjucks'
 import dateFilter from 'nunjucks-date-filter'
 import { FrontMatterAttributes, listToArray, setOutputs } from './helpers'
 import { addIssueToProjects, resolveProject } from './projects'
+import { findExistingIssue } from './issues'
 
 function retryRateLimit(retryAfter: number, _options: unknown, _octokit: unknown, retryCount: number) {
   if (retryCount >= 2) {
@@ -117,27 +118,7 @@ export async function createAnIssue () {
   ))
 
   if (updateExisting !== null) {
-    core.info(`Fetching ${searchExistingType} issues with title "${templated.title}"`)
-    const searchExistingQuery = (searchExistingType === 'all') ? '' : `is:${searchExistingType} `
-    let incompleteSearch = false
-    const existingIssues = await octokit.paginate(
-      octokit.rest.search.issuesAndPullRequests,
-      {
-        q: `${searchExistingQuery}is:issue repo:${owner}/${repo} in:title ${JSON.stringify(templated.title)}`,
-        per_page: 100
-      },
-      (response, done) => {
-        incompleteSearch ||= response.data.incomplete_results !== false || response.data.total_count > 1000
-        const issue = response.data.find(issue => issue.title === templated.title)
-        if (!issue) return []
-        done()
-        return [issue]
-      }
-    )
-    const existingIssue = existingIssues[0]
-    if (!existingIssue && incompleteSearch) {
-      throw new Error('GitHub returned incomplete issue search results; refusing to create a possible duplicate.')
-    }
+    const existingIssue = await findExistingIssue(octokit, repository, templated.title, searchExistingType)
     if (existingIssue) {
       if (updateExisting === false) {
         await addIssueToProjects(octokit, projects, existingIssue)
