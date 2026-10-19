@@ -7,6 +7,7 @@
   - [Dates](#dates)
   - [Escaping template content](#escaping-template-content)
   - [Issue types](#issue-types)
+  - [Projects](#projects)
   - [Custom templates](#custom-templates)
   - [Including workspace files](#including-workspace-files)
   - [Inputs](#inputs)
@@ -129,6 +130,34 @@ Describe the bug here.
 ```
 
 The type name also supports template variables and filters, for example `type: "{{ env.ISSUE_TYPE }}"`. If no type is specified, the action omits it from the request. Updating an existing issue leaves its type unchanged. GitHub requires push access to set an issue's type and may silently ignore it without that access; see [Create an issue](https://docs.github.com/en/rest/issues/issues#create-an-issue).
+
+### Projects
+
+Set `projects` in front matter to the URL of an organization- or user-owned Projects v2 project:
+
+```markdown
+---
+title: Follow up
+projects: https://github.com/orgs/my-organization/projects/7
+---
+Please follow up on this issue.
+```
+
+To add an issue to multiple projects, use a YAML list instead of a single URL:
+
+```yaml
+projects:
+  - https://github.com/orgs/my-organization/projects/7
+  - https://github.com/users/octocat/projects/3
+```
+
+User project URLs such as `https://github.com/users/octocat/projects/7` and project view URLs ending in `/views/1` are also supported. Each URL supports template variables and filters, for example `projects: "{{ env.PROJECT_URL }}"` or a quoted expression in a list. On GitHub Enterprise Server, use URLs on the server identified by `GITHUB_SERVER_URL`. Classic repository projects are not supported.
+
+The action adds newly created and matched existing issues to every listed project. This includes matches found with `update_existing: false`: the issue body is left unchanged, but project membership is still applied. Adding an issue already in a project reuses its existing project item. The action does not explicitly change project fields such as Status; each project's own workflows may apply their configured defaults.
+
+Set `GITHUB_TOKEN` to a token with access to both the destination repository and every listed project. The workflow's default `GITHUB_TOKEN` does not have the organization/user project permissions needed here. For a classic personal access token, grant the `project` scope and repository access as needed; an appropriately permissioned GitHub App token can also be used. See [Using the API to manage Projects](https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects).
+
+Every project is resolved before issue creation or updates. Invalid URLs and inaccessible projects fail the action. Membership is then added in list order through separate API operations: if an addition fails, the action fails without rolling back issue changes or earlier successful additions. Output statuses remain `created`, `updated`, or `found` and are set only after all project memberships succeed.
 
 ### Custom templates
 

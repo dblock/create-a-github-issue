@@ -3,6 +3,7 @@ import * as core from '@actions/core'
 export interface FrontMatterAttributes {
   title: string
   type?: string
+  projects?: string[] | string
   assignees?: string[] | string
   labels?: string[] | string
   milestone?: string | number
