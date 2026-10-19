@@ -1,12 +1,20 @@
 import * as core from '@actions/core'
 import type { getOctokit } from '@actions/github'
 
+interface Issue {
+  number: number
+  node_id: string
+  title: string
+  html_url: string
+  state: string
+}
+
 export async function findExistingIssue(
   octokit: ReturnType<typeof getOctokit>,
   repository: { owner: string, repo: string },
   title: string,
   state: string
-) {
+): Promise<Issue | undefined> {
   core.info(`Fetching ${state} issues with title "${title}"`)
   const stateQuery = state === 'all' ? '' : `is:${state} `
   let incompleteSearch = false

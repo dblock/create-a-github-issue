@@ -7,7 +7,7 @@ import fm from 'front-matter'
 import nunjucks from 'nunjucks'
 // @ts-ignore
 import dateFilter from 'nunjucks-date-filter'
-import { FrontMatterAttributes, listToArray, setOutputs } from './helpers'
+import { FrontMatterAttributes, IssueStatus, listToArray, setOutputs } from './helpers'
 import { addIssueToProjects, resolveProject } from './projects'
 import { findExistingIssue } from './issues'
 
@@ -22,7 +22,7 @@ function retryRateLimit(retryAfter: number, _options: unknown, _octokit: unknown
 
 function issueError(template: string, action: 'creating' | 'updating', cause: unknown) {
   const message = cause instanceof Error ? cause.message : String(cause)
-  return new Error(`An error occurred while ${action} the issue or adding it to a project. Check the title, labels, and assignees in ${template}, and the token's project permissions if a project is configured.\n\n${message}`, { cause })
+  return new Error(`An error occurred while ${action} the issue. Check the title, labels, and assignees in ${template}.\n\n${message}`, { cause })
 }
 
 export async function createAnIssue () {
@@ -105,49 +105,44 @@ export async function createAnIssue () {
     resolveProject(octokit, env.renderString(url, templateVariables))
   ))
 
-  if (updateExisting !== null) {
-    const existingIssue = await findExistingIssue(octokit, repository, templated.title, searchExistingType)
-    if (existingIssue) {
-      if (updateExisting === false) {
-        await addIssueToProjects(octokit, projects, existingIssue)
-        setOutputs(existingIssue, 'found')
-        core.info(`Existing issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url} found but not updated`)
-        return
-      } else {
-        try {
-          core.info(`Updating existing issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url}`)
-          await octokit.rest.issues.update({
-            ...repository,
-            issue_number: existingIssue.number,
-            body: templated.body,
-            ...(reopenExisting && existingIssue.state === 'closed' ? { state: 'open' as const } : {})
-          })
-          await addIssueToProjects(octokit, projects, existingIssue)
-          setOutputs(existingIssue, 'updated')
-          core.info(`Updated issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url}`)
-          return
-        } catch (err) {
-          throw issueError(template, 'updating', err)
-        }
+  let issue = updateExisting === null
+    ? undefined
+    : await findExistingIssue(octokit, repository, templated.title, searchExistingType)
+  let status: IssueStatus
+
+  if (issue) {
+    status = 'found'
+    if (updateExisting) {
+      core.info(`Updating existing issue ${issue.title}#${issue.number}: ${issue.html_url}`)
+      try {
+        await octokit.rest.issues.update({
+          ...repository,
+          issue_number: issue.number,
+          body: templated.body,
+          ...(reopenExisting && issue.state === 'closed' ? { state: 'open' as const } : {})
+        })
+      } catch (err) {
+        throw issueError(template, 'updating', err)
       }
-    } else {
-      core.info('No existing issue found to update')
+      status = 'updated'
     }
+  } else {
+    if (updateExisting !== null) core.info('No existing issue found to update')
+    core.info(`Creating new issue ${templated.title}`)
+    try {
+      issue = (await octokit.rest.issues.create({
+        ...repository,
+        ...templated,
+        milestone: Number(core.getInput('milestone') || attributes.milestone) || undefined
+      })).data
+    } catch (err) {
+      throw issueError(template, 'creating', err)
+    }
+    status = 'created'
   }
 
-  // Create the new issue
-  core.info(`Creating new issue ${templated.title}`)
-  try {
-    const issue = await octokit.rest.issues.create({
-      ...repository,
-      ...templated,
-      milestone: Number(core.getInput('milestone') || attributes.milestone) || undefined
-    })
-
-    await addIssueToProjects(octokit, projects, issue.data)
-    setOutputs(issue.data, 'created')
-    core.info(`Created issue ${issue.data.title}#${issue.data.number}: ${issue.data.html_url}`)
-  } catch (err) {
-    throw issueError(template, 'creating', err)
-  }
+  await addIssueToProjects(octokit, projects, issue)
+  setOutputs(issue, status)
+  const action = status === 'created' ? 'Created' : status === 'updated' ? 'Updated' : 'Existing'
+  core.info(`${action} issue ${issue.title}#${issue.number}: ${issue.html_url}${status === 'found' ? ' found but not updated' : ''}`)
 }
