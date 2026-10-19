@@ -22,7 +22,6 @@ jest.unstable_mockModule('@actions/core', () => ({
 export const mockIssuesCreate = jest.fn<(data: any) => Promise<any>>()
 export const mockIssuesUpdate = jest.fn<(data: any) => Promise<any>>()
 export const mockSearchIssuesAndPullRequests = jest.fn<(query: any) => Promise<any>>()
-export const mockGraphql = jest.fn<(query: string, variables: Record<string, unknown>) => Promise<unknown>>()
 
 jest.unstable_mockModule('@actions/github', () => ({
   context: {
@@ -43,7 +42,6 @@ jest.unstable_mockModule('@actions/github', () => ({
       })
       return map({ data }, () => {})
     },
-    graphql: mockGraphql,
     rest: {
       issues: {
         create: mockIssuesCreate,
@@ -71,7 +69,6 @@ beforeEach(() => {
       data: {
         title: data.title,
         number: 1,
-        node_id: 'I_created',
         html_url: 'www'
       }
     }
@@ -85,7 +82,6 @@ beforeEach(() => {
   mockSearchIssuesAndPullRequests.mockImplementation(async () => ({
     data: { items: [] }
   }))
-  mockGraphql.mockReset()
 
   // Reset input mocks
   mockGetInput.mockImplementation((name: unknown) => {
@@ -103,7 +99,6 @@ beforeEach(() => {
   delete process.env.INPUT_REPO
   delete process.env.ISSUE_TYPE
   delete process.env.INPUT_REOPEN_EXISTING
-  delete process.env.PROJECT_URL
 
   // Simulate an environment variable added for the action
   process.env.EXAMPLE = 'foo'

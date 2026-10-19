@@ -3,7 +3,6 @@ import type { getOctokit } from '@actions/github'
 
 interface Issue {
   number: number
-  node_id: string
   title: string
   html_url: string
   state: string

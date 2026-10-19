@@ -1,12 +1,11 @@
 import { describe, it, expect } from '@jest/globals'
-import { createAnIssue, params, mockSetOutput, mockSetFailed, mockInfo, mockIssuesCreate, mockIssuesUpdate, mockSearchIssuesAndPullRequests, mockGraphql } from './action-setup'
+import { createAnIssue, params, mockSetOutput, mockSetFailed, mockInfo, mockIssuesCreate, mockIssuesUpdate, mockSearchIssuesAndPullRequests } from './action-setup'
 
 describe('create-a-github-issue', () => {
   it('creates a new issue', async () => {
     await createAnIssue()
     expect(params).toMatchSnapshot()
     expect(params).not.toHaveProperty('type')
-    expect(mockGraphql).not.toHaveBeenCalled()
     expect(mockInfo).toHaveBeenCalledWith(expect.stringContaining('Created issue'))
 
     // Verify that the outputs were set
