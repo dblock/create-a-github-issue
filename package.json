@@ -16,7 +16,6 @@
     "@actions/github": "^9.0.0",
     "@octokit/plugin-throttling": "^11.0.5",
     "front-matter": "4.0.2",
-    "js-yaml": "5.4.2",
     "nunjucks": "3.2.4",
     "nunjucks-date-filter": "0.1.1"
   },
