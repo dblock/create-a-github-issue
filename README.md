@@ -204,6 +204,8 @@ steps:
 * The `reopen_existing` param defaults to `false`. Set it to `true` with `update_existing: true` and `search_existing: all` (or `closed`) to reopen a matched closed issue while updating its body. It does not reopen issues when updates are disabled. The output status remains `updated`.
 * The `search_existing` param lets you specify whether to search `open`, `closed`, or `all` existing issues for duplicates (default is `open`).
 
+Duplicate detection uses the fully rendered title as a quoted search phrase, escaping embedded quotes and backslashes. It compares titles exactly, including case and punctuation, across available result pages and stops at the first exact match. If no exact match is found and GitHub reports incomplete results or more than its 1,000-result search limit, the action fails rather than risk creating a duplicate. Newly created issues may not appear immediately because GitHub search indexing is asynchronous.
+
 ### Outputs
 
 If you need the number or URL of the issue that was created or updated for another Action, you can use the `number`, `url` and `status` outputs, respectively. For example:
