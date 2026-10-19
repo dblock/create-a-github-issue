@@ -1,6 +1,6 @@
 ### 3.5.0 (Next)
 
-* Simplify issue orchestration and failure reporting, and validate front matter field types before API requests - [@dblock](https://github.com/dblock).
+* [#209](https://github.com/dblock/create-a-github-issue/pull/209): Simplify issue orchestration and failure reporting, and validate front matter field types before API requests - [@dblock](https://github.com/dblock).
 * [#7](https://github.com/dblock/create-a-github-issue/issues/7): Add created and matched existing issues to Projects v2 projects specified by a URL or list of URLs in projects front matter - [@dblock](https://github.com/dblock).
 * [#178](https://github.com/JasonEtco/create-an-issue/issues/178): Quote rendered titles and paginate exact-title duplicate searches, failing safely on incomplete results - [@dblock](https://github.com/dblock).
 * [#165](https://github.com/JasonEtco/create-an-issue/issues/165): Resolve Nunjucks includes from the workspace and document adding generated reports to issue bodies - [@dblock](https://github.com/dblock).
