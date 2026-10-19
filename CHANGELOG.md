@@ -1,4 +1,4 @@
-### 3.4.2 (Next)
+### 3.5.0 (Next)
 
 * [#178](https://github.com/JasonEtco/create-an-issue/issues/178): Quote rendered titles and paginate exact-title duplicate searches, failing safely on incomplete results - [@dblock](https://github.com/dblock).
 * [#165](https://github.com/JasonEtco/create-an-issue/issues/165): Resolve Nunjucks includes from the workspace and document adding generated reports to issue bodies - [@dblock](https://github.com/dblock).
