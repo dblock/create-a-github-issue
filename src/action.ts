@@ -52,6 +52,13 @@ export async function createAnIssue () {
     }
   }
 
+  const reopenExistingInput = core.getInput('reopen_existing') || 'false'
+  if (!['true', 'false'].includes(reopenExistingInput)) {
+    core.setFailed(`Invalid value reopen_existing=${reopenExistingInput}, must be one of true or false`)
+    return
+  }
+  const reopenExisting = reopenExistingInput === 'true'
+
   const env = nunjucks.configure({ autoescape: false })
   env.addFilter('date', dateFilter)
 
@@ -102,7 +109,8 @@ export async function createAnIssue () {
           await octokit.rest.issues.update({
             ...repository,
             issue_number: existingIssue.number,
-            body: templated.body
+            body: templated.body,
+            ...(reopenExisting && existingIssue.state === 'closed' ? { state: 'open' as const } : {})
           })
           setOutputs(existingIssue, 'updated')
           core.info(`Updated issue ${existingIssue.title}#${existingIssue.number}: ${existingIssue.html_url}`)
