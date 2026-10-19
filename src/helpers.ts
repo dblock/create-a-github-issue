@@ -3,7 +3,6 @@ import * as core from '@actions/core'
 export interface FrontMatterAttributes {
   title: string
   type?: string
-  projects?: string[] | string
   assignees?: string[] | string
   labels?: string[] | string
   milestone?: string | number
@@ -15,10 +14,9 @@ export function validateFrontMatter(attributes: unknown, template: string): asse
   }
   for (const [field, value] of Object.entries(attributes)) {
     if (value === undefined) continue
-    if (['projects', 'assignees', 'labels'].includes(field)) {
+    if (['assignees', 'labels'].includes(field)) {
       if (typeof value !== 'string' && !(Array.isArray(value) && value.every(item => typeof item === 'string'))) {
-        const expected = field === 'projects' ? 'a Projects v2 URL or a list of URLs' : 'a string or a list of strings'
-        throw new Error(`The ${field} field in ${template} must be ${expected}.`)
+        throw new Error(`The ${field} field in ${template} must be a string or a list of strings.`)
       }
     } else if (field === 'type' && typeof value !== 'string') {
       throw new Error(`The type field in ${template} must be a string.`)

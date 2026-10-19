@@ -9,7 +9,6 @@ This is a TypeScript ESM GitHub Action running on Node.js 24. Use npm and keep `
 - `src/index.ts`: action entry point and failure reporting.
 - `src/action.ts`: workflow inputs, template rendering, and issue orchestration.
 - `src/issues.ts`: exact-title duplicate searches and completeness safeguards.
-- `src/projects.ts`: Projects v2 resolution and membership.
 - `src/helpers.ts`: front matter validation, input parsing, and outputs.
 - `tests/`: Jest tests and template fixtures. `tests/action-setup.ts` shares mocked action setup; search and rate-limit suites exercise the real Octokit client with mocked HTTP transport.
 - `action.yml`: public action metadata and inputs.
@@ -18,7 +17,7 @@ This is a TypeScript ESM GitHub Action running on Node.js 24. Use npm and keep `
 
 Keep changes focused and preserve existing defaults. Update `README.md` and `action.yml` when their documented behavior or inputs change.
 
-Preserve the distinction between omitted `update_existing` and explicit `false`. Keep exact-title search safeguards, project membership for matched issues even when updates are disabled, and output publication only after all project additions succeed. Labels and assignees support comma-separated strings; project URLs do not.
+Preserve the distinction between omitted `update_existing` and explicit `false`. Keep exact-title search safeguards and publish outputs only after issue operations succeed. Labels and assignees support comma-separated strings.
 
 Propagate operation errors to the entry point, retaining useful context and original API error details. Validate front matter before API requests. Follow the existing TypeScript style and avoid weakening types with `any` or unchecked casts.
 

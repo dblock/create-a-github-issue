@@ -28,7 +28,6 @@ describe('front matter validation', () => {
     { yaml: 'title: Report\ntype: true', field: 'type' },
     { yaml: 'title: Report\nassignees: [octocat, 42]', field: 'assignees' },
     { yaml: 'title: Report\nlabels: {name: bug}', field: 'labels' },
-    { yaml: 'title: Report\nprojects: false', field: 'projects' },
     { yaml: 'title: Report\nmilestone: [1]', field: 'milestone' }
   ])('rejects invalid $field before creating an API client: $yaml', async ({ yaml, field }) => {
     mockReadFile.mockResolvedValueOnce(`---\n${yaml}\n---\nReport\n`)

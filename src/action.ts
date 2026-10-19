@@ -8,7 +8,6 @@ import nunjucks from 'nunjucks'
 // @ts-ignore
 import dateFilter from 'nunjucks-date-filter'
 import { IssueStatus, listToArray, readBooleanInput, setOutputs, validateFrontMatter } from './helpers'
-import { addIssueToProjects, resolveProject } from './projects'
 import { findExistingIssue } from './issues'
 
 function retryRateLimit(retryAfter: number, _options: unknown, _octokit: unknown, retryCount: number) {
@@ -64,9 +63,6 @@ export async function createAnIssue () {
   const { attributes, body } = fm<unknown>(file)
   validateFrontMatter(attributes, template)
   core.info(`Front matter for ${template} is ${JSON.stringify(attributes)}`)
-  const projectUrls = attributes.projects === undefined
-    ? []
-    : Array.isArray(attributes.projects) ? attributes.projects : [attributes.projects]
 
   const templated = {
     body: env.renderString(body, templateVariables),
@@ -84,9 +80,6 @@ export async function createAnIssue () {
       onSecondaryRateLimit: retryRateLimit
     }
   }, throttling)
-  const projects = await Promise.all(projectUrls.map(url =>
-    resolveProject(octokit, env.renderString(url, templateVariables))
-  ))
 
   let issue = updateExisting === null
     ? undefined
@@ -124,7 +117,6 @@ export async function createAnIssue () {
     status = 'created'
   }
 
-  await addIssueToProjects(octokit, projects, issue)
   setOutputs(issue, status)
   const action = status === 'created' ? 'Created' : status === 'updated' ? 'Updated' : 'Existing'
   core.info(`${action} issue ${issue.title}#${issue.number}: ${issue.html_url}${status === 'found' ? ' found but not updated' : ''}`)
