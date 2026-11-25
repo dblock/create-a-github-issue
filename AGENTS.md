@@ -1,4 +1,4 @@
-# Agent guidance
+# Agent Guidance
 
 ## Project
 
@@ -27,9 +27,9 @@ Add focused regression tests for behavior changes. Unit tests must not contact G
 
 ## Validation
 
-Follow the validation commands in `CONTRIBUTING.md` before committing code changes. Run targeted tests when sufficient and build production-code or dependency changes.
+Follow the validation commands in `CONTRIBUTING.md`, including `npm run lint`, before committing code changes. Use Title Case for Markdown headings and workflow, job, and step display names, and add reviewed vocabulary to `.spellcheck.txt`. Run targeted tests when sufficient and build production-code or dependency changes.
 
-## Documentation and pull requests
+## Documentation and Pull Requests
 
 Keep Markdown prose unwrapped. Add a changelog entry under the current `(Next)` heading, preserving `Your contribution here.` and existing entries. Include a linked issue or PR number; once a PR is opened, add its number to the entry.
 

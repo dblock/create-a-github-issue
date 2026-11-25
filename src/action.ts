@@ -5,7 +5,7 @@ import * as fs from 'fs/promises'
 import * as path from 'path'
 import fm from 'front-matter'
 import nunjucks from 'nunjucks'
-// @ts-ignore
+// @ts-expect-error nunjucks-date-filter ships no type declarations.
 import dateFilter from 'nunjucks-date-filter'
 import { IssueStatus, listToArray, readBooleanInput, setOutputs, validateFrontMatter } from './helpers'
 import { findExistingIssue } from './issues'

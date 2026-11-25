@@ -7,7 +7,11 @@
   "scripts": {
     "start": "npx ncc run ./src/index.ts",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
-    "build": "npx ncc build ./src/index.ts"
+    "build": "npx ncc build ./src/index.ts",
+    "lint": "npm run lint:types && npm run lint:code && npm run lint:markdown",
+    "lint:types": "tsc --noEmit",
+    "lint:code": "eslint .",
+    "lint:markdown": "eslint --config eslint.config-markdown.js \"*.md\""
   },
   "author": "Jason Etcovitch <jasonetco@gmail.com>",
   "license": "MIT",
@@ -20,14 +24,24 @@
     "nunjucks-date-filter": "0.1.1"
   },
   "devDependencies": {
+    "@cspell/dict-en_us": "^4.4.43",
+    "@cspell/dict-software-terms": "^5.4.11",
+    "@eslint/js": "^10.0.1",
+    "@eslint/markdown": "^8.0.3",
     "@tsconfig/recommended": "^1.0.3",
     "@types/jest": "30.0.0",
     "@types/node": "^26.0.0",
     "@types/nunjucks": "3.2.6",
     "@vercel/ncc": "0.45.0",
+    "eslint": "^10.15.0",
+    "eslint-plugin-markdown-preferences": "^0.43.0",
+    "eslint-plugin-markdown-preferences-paragraph": "^0.2.0",
+    "eslint-plugin-prose-spellcheck": "^0.1.2",
+    "globals": "^17.14.0",
     "jest": "30.5.2",
     "ts-jest": "29.4.15",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "typescript-eslint": "^8.74.0"
   },
   "jest": {
     "testEnvironment": "node",

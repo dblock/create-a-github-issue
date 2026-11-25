@@ -17,7 +17,7 @@
 
 This is a maintained fork of [JasonEtco/create-an-issue](https://github.com/JasonEtco/create-an-issue). See [CHANGELOG](CHANGELOG.md) for fixes and features.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing, and contribution guidelines.
+See [CONTRIBUTING](CONTRIBUTING.md) for development setup, testing, and contribution guidelines.
 
 ## Usage
 
@@ -34,7 +34,7 @@ jobs:
   stuff:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
       - uses: dblock/create-a-github-issue@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -95,11 +95,11 @@ What's everyone up to this week?
 
 This example will create a new issue with a title like **Weekly Radar Saturday, November 10th**. You can pass any valid [Moment.js formatting string](https://momentjs.com/docs/#/displaying/) to the filter.
 
-### Escaping template content
+### Escaping Template Content
 
 The action parses YAML front matter first, then renders the body and templated front matter fields with Nunjucks. YAML quoting and Nunjucks escaping solve different problems.
 
-#### YAML front matter
+#### YAML Front Matter
 
 A title beginning with a backtick must be quoted to be valid YAML:
 
@@ -109,7 +109,7 @@ title: "`light-the-torch` is out of sync"
 
 The surrounding YAML quotes are not included in the issue title. Quoting a value does not prevent Nunjucks expressions inside it from being rendered.
 
-#### Literal Nunjucks syntax
+#### Literal Nunjucks Syntax
 
 Nunjucks interprets `{{` as the start of an expression, even inside Markdown backticks or code fences. To include literal template syntax in the issue body, wrap it in a raw block:
 
@@ -121,7 +121,7 @@ Example syntax: {{ value }}
 
 The raw tags are omitted from the issue body, and their contents are preserved literally rather than interpolated. Raw blocks affect Nunjucks rendering only; front matter must still be valid YAML.
 
-### Issue types
+### Issue Types
 
 Set `type` in front matter to associate a new issue with an issue type available in the repository's organization:
 
@@ -135,13 +135,13 @@ Describe the bug here.
 
 The type name also supports template variables and filters, for example `type: "{{ env.ISSUE_TYPE }}"`. If no type is specified, the action omits it from the request. Updating an existing issue leaves its type unchanged. GitHub requires push access to set an issue's type and may silently ignore it without that access; see [Create an issue](https://docs.github.com/en/rest/issues/issues#create-an-issue).
 
-### Custom templates
+### Custom Templates
 
 Don't want to use `.github/ISSUE_TEMPLATE.md`? You can pass an input pointing the action to a different template:
 
 ```yaml
 steps:
-  - uses: actions/checkout@v3
+  - uses: actions/checkout@v7
   - uses: dblock/create-a-github-issue@v3
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -149,13 +149,13 @@ steps:
       filename: .github/some-other-template.md
 ```
 
-### Including workspace files
+### Including Workspace Files
 
 Use Nunjucks' `include` tag to add a file from the workspace to the issue body. For example, generate `reports/report.md` in an earlier step:
 
 ```yaml
 steps:
-  - uses: actions/checkout@v3
+  - uses: actions/checkout@v7
   - name: Generate report
     run: |
       mkdir -p reports
@@ -190,7 +190,7 @@ Want to use Action logic to determine who to assign the issue to, to assign a mi
 
 ```yaml
 steps:
-  - uses: actions/checkout@v3
+  - uses: actions/checkout@v7
   - uses: dblock/create-a-github-issue@v3
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -203,11 +203,11 @@ steps:
       search_existing: all
 ```
 
-* The `repo` input selects the repository to create, search for, and update issues in, in `owner/repo` format. It defaults to the workflow repository. For another repository, set `GITHUB_TOKEN` to a token with access to that repository and permission to write issues; the workflow's default token is normally limited to its own repository. Template variables such as `repo` and `env.GITHUB_REPOSITORY` still describe the workflow repository.
-* The `assignees` and `milestone` speak for themselves.
-* The `update_existing` param can be passed and set to `true` when you want to update an open issue with the **exact same title** when it exists and `false` if you don't want to create a new issue, but skip updating an existing one.
-* The `reopen_existing` param defaults to `false`. Set it to `true` with `update_existing: true` and `search_existing: all` (or `closed`) to reopen a matched closed issue while updating its body. It does not reopen issues when updates are disabled. The output status remains `updated`.
-* The `search_existing` param lets you specify whether to search `open`, `closed`, or `all` existing issues for duplicates (default is `open`).
+- The `repo` input selects the repository to create, search for, and update issues in, in `owner/repo` format. It defaults to the workflow repository. For another repository, set `GITHUB_TOKEN` to a token with access to that repository and permission to write issues; the workflow's default token is normally limited to its own repository. Template variables such as `repo` and `env.GITHUB_REPOSITORY` still describe the workflow repository.
+- The `assignees` and `milestone` speak for themselves.
+- The `update_existing` param can be passed and set to `true` when you want to update an open issue with the **exact same title** when it exists and `false` if you don't want to create a new issue, but skip updating an existing one.
+- The `reopen_existing` param defaults to `false`. Set it to `true` with `update_existing: true` and `search_existing: all` (or `closed`) to reopen a matched closed issue while updating its body. It does not reopen issues when updates are disabled. The output status remains `updated`.
+- The `search_existing` param lets you specify whether to search `open`, `closed`, or `all` existing issues for duplicates (default is `open`).
 
 Duplicate detection uses the fully rendered title as a quoted search phrase, escaping embedded quotes and backslashes. It compares titles exactly, including case and punctuation, across available result pages and stops at the first exact match. If no exact match is found and GitHub reports incomplete results or more than its 1,000-result search limit, the action fails rather than risk creating a duplicate. Newly created issues may not appear immediately because GitHub search indexing is asynchronous.
 
@@ -226,5 +226,5 @@ steps:
   - run: 'echo url: ${{ steps.create-issue.outputs.url }}'
 ```
 
-* The `number` and `url` outputs speak for themselves.
-* The `status` is one of `created`, `updated` or `found`.
+- The `number` and `url` outputs speak for themselves.
+- The `status` is one of `created`, `updated` or `found`.
