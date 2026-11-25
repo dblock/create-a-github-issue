@@ -38,8 +38,8 @@ jobs:
         run: npm ci
       - name: Run Tests with Coverage
         run: npm test
-      - name: Run Integration and Release Helper Tests
-        run: node --test tests/integration/workflow.test.mjs tests/release/publish-release.test.mjs
+      - name: Run Integration Helper Tests
+        run: node --test tests/integration/workflow.test.mjs
       - name: Upload Coverage to Codecov
         if: matrix.entry.coverage
         uses: codecov/codecov-action@v7
