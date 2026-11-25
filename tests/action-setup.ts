@@ -23,9 +23,20 @@ export const mockIssuesCreate = jest.fn<(data: any) => Promise<any>>()
 export const mockIssuesUpdate = jest.fn<(data: any) => Promise<any>>()
 export const mockSearchIssuesAndPullRequests = jest.fn<(query: any) => Promise<any>>()
 
+// Mock artifact uploads; unit tests must not upload workspace files
+export const mockUploadArtifact = jest.fn<(name: string, files: string[], rootDirectory: string) => Promise<{ id?: number, size?: number }>>()
+
+jest.unstable_mockModule('@actions/artifact', () => ({
+  DefaultArtifactClient: class {
+    uploadArtifact = mockUploadArtifact
+  },
+}))
+
 jest.unstable_mockModule('@actions/github', () => ({
   context: {
     repo: { owner: 'JasonEtco', repo: 'waddup' },
+    serverUrl: 'https://github.com',
+    runId: 1234,
     payload: {},
     action: 'create-a-github-issue',
   },
@@ -99,6 +110,10 @@ beforeEach(() => {
   delete process.env.INPUT_REPO
   delete process.env.ISSUE_TYPE
   delete process.env.INPUT_REOPEN_EXISTING
+  delete process.env.INPUT_ATTACHMENTS
+  delete process.env.INPUT_ATTACHMENTS_NAME
+
+  mockUploadArtifact.mockResolvedValue({ id: 42, size: 100 })
 
   // Simulate an environment variable added for the action
   process.env.EXAMPLE = 'foo'

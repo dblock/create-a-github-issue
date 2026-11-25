@@ -31,6 +31,12 @@ inputs:
     description: Existing types of issues to search for (comma-separated).
     required: false
     default: open
+  attachments:
+    description: Workspace files to upload as a workflow artifact that templates can link to with the attachments variable (newline-separated glob patterns).
+    required: false
+  attachments_name:
+    description: Name of the attachments artifact. Defaults to a name unique to the job, step, and run attempt.
+    required: false
 outputs:
   number:
     description: Number of the issue that was created.

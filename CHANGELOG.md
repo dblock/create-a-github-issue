@@ -4,6 +4,7 @@
 * [#250](https://github.com/dblock/create-a-github-issue/pull/250): Rename the Node CI workflow to Test with Title Case job and step names, and run unit tests on Node 24 (the action runtime) and Node 26 - [@dblock](https://github.com/dblock).
 * [#253](https://github.com/dblock/create-a-github-issue/pull/253): Lint TypeScript, JavaScript, and Markdown with ESLint in a Lint workflow, and clean up documentation - [@dblock](https://github.com/dblock).
 * [#258](https://github.com/dblock/create-a-github-issue/pull/258): Speed up CI by cancelling superseded pull request runs, setting job timeouts, and caching npm downloads - [@dblock](https://github.com/dblock).
+* [#9](https://github.com/dblock/create-a-github-issue/issues/9): Upload workspace files matching the attachments input as a workflow artifact and expose its link and file list to templates, and publish every built file in releases - [@dblock](https://github.com/dblock).
 * Your contribution here.
 
 ### 3.5.0 (2026/10/19)

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
-import { cleanup, identity, verify, waitForSearch } from './workflow.mjs'
+import { cleanup, findAttachmentsArtifact, identity, verify, waitForArtifact, waitForSearch } from './workflow.mjs'
 
 const repository = { owner: 'example', repo: 'repository' }
 const key = '123-1'
@@ -87,6 +87,48 @@ test('verification detects incorrect outputs, body changes, and failed reopening
   assert.throws(() => verify({ ...issue, assignees: [] }, env))
   assert.throws(() => verify({ ...issue, labels: [] }, env))
   assert.throws(() => verify({ ...issue, milestone: { number: 8 } }, env))
+})
+
+test('attachment verification requires the run artifact link and uploaded file list', () => {
+  const env = {
+    INTEGRATION_KEY: key, GITHUB_REPOSITORY: 'example/repository',
+    GITHUB_RUN_ID: '123', GITHUB_SERVER_URL: 'https://github.com',
+    ISSUE_NUMBER: '42', ORIGINAL_NUMBER: '42', ISSUE_URL: 'https://github.com/example/repository/issues/42',
+    ISSUE_STATUS: 'updated', EXPECTED_STATUS: 'updated', EXPECTED_PHASE: 'attachments',
+    INTEGRATION_ASSIGNEE: 'example', INTEGRATION_LABEL: 'test', INTEGRATION_MILESTONE: '7'
+  }
+  const artifact = findAttachmentsArtifact([
+    { id: 1, name: 'unrelated', size_in_bytes: 10 },
+    { id: 99, name: `action-integration-${key}`, size_in_bytes: 10 }
+  ], key)
+  const body = `${marker}\nAI-generated integration test issue for example/repository, posted on behalf of @dblock.\nWorkflow run: [123](https://github.com/example/repository/actions/runs/123)\nPhase: attachments\nYear: ${new Date().getUTCFullYear()}\nFilter: ATTACHMENTS\nLiteral: {{ not_a_variable }}\n# Generated report\nAll checks passed.\nNested report details.\n\nAttachments: [action-integration-${key}](https://github.com/example/repository/actions/runs/123/artifacts/99)\n- tests/integration/generated-details.md\n- tests/integration/generated-report.md\n`
+  const issue = {
+    number: 42, title, html_url: env.ISSUE_URL, state: 'open', body,
+    assignees: [{ login: 'example' }], labels: [{ name: 'test' }, { name: 'action-integration' }], milestone: { number: 7 }
+  }
+  verify(issue, env, artifact)
+  assert.throws(() => verify(issue, env))
+  assert.throws(() => verify(issue, env, { ...artifact, id: 100 }))
+  assert.throws(() => verify({ ...issue, body: body.replace('- tests/integration/generated-report.md\n', '') }, env, artifact))
+  assert.throws(() => findAttachmentsArtifact([], key))
+  assert.throws(() => findAttachmentsArtifact([{ id: 99, name: `action-integration-${key}`, size_in_bytes: 0 }], key))
+})
+
+test('waits for the attachments artifact to be listed on the run and then fails after the deadline', async () => {
+  const listed = { id: 99, name: `action-integration-${key}`, size_in_bytes: 10 }
+  const responses = [[], [], [listed]]
+  const calls = []
+  const octokit = {
+    paginate: async (_method, options) => { calls.push(options); return responses.shift() ?? [] },
+    rest: { actions: { listWorkflowRunArtifacts: {} } }
+  }
+  const sleep = mock.fn(async () => {})
+  assert.deepEqual(await waitForArtifact(octokit, repository, 123, key, sleep), listed)
+  assert.equal(sleep.mock.callCount(), 2)
+  assert.deepEqual(calls[0], { ...repository, run_id: 123, name: `action-integration-${key}`, per_page: 100 })
+
+  const never = { paginate: async () => [], rest: { actions: { listWorkflowRunArtifacts: {} } } }
+  await assert.rejects(waitForArtifact(never, repository, 123, key, async () => {}), /was not listed on run 123/)
 })
 
 test('cleanup removes only the run-specific labels and milestone after closing issues', async () => {
