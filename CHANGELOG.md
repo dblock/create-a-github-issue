@@ -1,6 +1,7 @@
 ### 3.5.1 (Next)
 
 * [#247](https://github.com/dblock/create-a-github-issue/pull/247): Remove Renovate configuration and Renovate-specific workflow conditions - [@dblock](https://github.com/dblock).
+* [#250](https://github.com/dblock/create-a-github-issue/pull/250): Rename the Node CI workflow to Test with Title Case job and step names, and run unit tests on Node 24 (the action runtime) and Node 26 - [@dblock](https://github.com/dblock).
 * Your contribution here.
 
 ### 3.5.0 (2026/10/19)

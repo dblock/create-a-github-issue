@@ -1,6 +1,6 @@
 <h3 align="center">Create an Issue Action</h3>
 <p align="center">A GitHub Action that creates a new issue using a template file.<p>
-<p align="center"><a href="https://github.com/dblock/create-a-github-issue"><img alt="GitHub Actions status" src="https://github.com/dblock/create-a-github-issue/workflows/Node%20CI/badge.svg"></a> <a href="https://codecov.io/gh/dblock/create-a-github-issue/"><img src="https://codecov.io/gh/dblock/create-a-github-issue/branch/main/graph/badge.svg?token=9wHcESNsRI" alt="Codecov"></a></p>
+<p align="center"><a href="https://github.com/dblock/create-a-github-issue/actions/workflows/test.yml"><img alt="Test" src="https://github.com/dblock/create-a-github-issue/actions/workflows/test.yml/badge.svg"></a> <a href="https://codecov.io/gh/dblock/create-a-github-issue/"><img src="https://codecov.io/gh/dblock/create-a-github-issue/branch/main/graph/badge.svg?token=9wHcESNsRI" alt="Codecov"></a></p>
 
 - [Fork](#fork)
 - [Contributing](CONTRIBUTING.md)
