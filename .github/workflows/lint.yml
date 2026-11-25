@@ -9,10 +9,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   lint:
     name: Lint Code and Documentation
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Check Out Source
         uses: actions/checkout@v7
@@ -20,6 +25,7 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 26.x
+          cache: npm
       - name: Install Dependencies
         run: npm ci
       - name: Run Lint
