@@ -1,4 +1,4 @@
-name: Node CI
+name: Test
 
 on:
   pull_request:
@@ -11,27 +11,41 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  test:
+    name: Unit Tests on Node ${{ matrix.entry.node }}
     runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        entry:
+          # Node 24 is the action's runtime (action.yml runs.using); Node 26 is the current release.
+          - { node: '24.x', coverage: false }
+          - { node: '26.x', coverage: true }
     steps:
-    - uses: actions/checkout@v7
-    - name: Use Node.js 24.x
-      uses: actions/setup-node@v7
-      with:
-        node-version: 26.x
-    - run: npm ci
-    - run: npm test
-    - run: node --test tests/integration/workflow.test.mjs
-    - uses: codecov/codecov-action@v7
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Check Out Source
+        uses: actions/checkout@v7
+      - name: Set Up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.entry.node }}
+      - name: Install Dependencies
+        run: npm ci
+      - name: Run Tests with Coverage
+        run: npm test
+      - name: Run Integration Helper Tests
+        run: node --test tests/integration/workflow.test.mjs
+      - name: Upload Coverage to Codecov
+        if: matrix.entry.coverage
+        uses: codecov/codecov-action@v7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   integration:
+    name: Live Integration
     # Organization issue types require an organization-owned repository; this repository is user-owned.
     # Cross-repository writes need another token. Rate limits and incomplete/paginated search
     # responses are covered offline rather than deliberately exhausting GitHub's API limits.
-    needs: build
+    needs: test
     if: >-
       github.event_name != 'pull_request' ||
       (github.event.pull_request.head.repo.full_name == github.repository &&
@@ -45,18 +59,22 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       INTEGRATION_KEY: ${{ github.run_id }}-${{ github.run_attempt }}
     steps:
-      - uses: actions/checkout@v7
+      - name: Check Out Source
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - name: Set Up Node
+        uses: actions/setup-node@v7
         with:
           node-version: 26.x
-      - run: npm ci
-      - run: npm run build
-      - name: Prepare disposable metadata and nested workspace reports
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build Action
+        run: npm run build
+      - name: Prepare Disposable Metadata and Nested Workspace Reports
         id: prepare
         run: node tests/integration/workflow.mjs prepare
-      - name: Create issue with this checkout
+      - name: Create Issue with This Checkout
         id: create
         uses: ./
         with:
@@ -65,7 +83,7 @@ jobs:
           update_existing: 'true'
         env:
           INTEGRATION_PHASE: created
-      - name: Verify creation and wait for search indexing
+      - name: Verify Creation and Wait for Search Indexing
         run: |
           node tests/integration/workflow.mjs verify
           node tests/integration/workflow.mjs wait
@@ -75,7 +93,7 @@ jobs:
           ISSUE_STATUS: ${{ steps.create.outputs.status }}
           EXPECTED_STATUS: created
           EXPECTED_PHASE: created
-      - name: Find issue without changing its body
+      - name: Find Issue Without Changing Its Body
         id: find
         uses: ./
         with:
@@ -83,7 +101,7 @@ jobs:
           update_existing: 'false'
         env:
           INTEGRATION_PHASE: must-not-be-written
-      - name: Verify unchanged issue
+      - name: Verify Unchanged Issue
         run: node tests/integration/workflow.mjs verify
         env:
           ISSUE_NUMBER: ${{ steps.find.outputs.number }}
@@ -92,7 +110,7 @@ jobs:
           ORIGINAL_NUMBER: ${{ steps.create.outputs.number }}
           EXPECTED_STATUS: found
           EXPECTED_PHASE: created
-      - name: Update existing issue
+      - name: Update Existing Issue
         id: update
         uses: ./
         with:
@@ -100,7 +118,7 @@ jobs:
           update_existing: 'true'
         env:
           INTEGRATION_PHASE: updated
-      - name: Verify update and close issue
+      - name: Verify Update and Close Issue
         run: |
           node tests/integration/workflow.mjs verify
           node tests/integration/workflow.mjs close
@@ -111,12 +129,12 @@ jobs:
           ORIGINAL_NUMBER: ${{ steps.create.outputs.number }}
           EXPECTED_STATUS: updated
           EXPECTED_PHASE: updated
-      - name: Wait for closed issue search indexing
+      - name: Wait for Closed Issue Search Indexing
         run: node tests/integration/workflow.mjs wait
         env:
           ISSUE_NUMBER: ${{ steps.create.outputs.number }}
           EXPECTED_STATE: closed
-      - name: Update a closed issue without reopening
+      - name: Update a Closed Issue Without Reopening
         # First exercise a closed-only search without implicitly reopening the issue.
         id: closed_update
         uses: ./
@@ -126,7 +144,7 @@ jobs:
           search_existing: closed
         env:
           INTEGRATION_PHASE: closed-update
-      - name: Verify closed update and wait for closed search indexing
+      - name: Verify Closed Update and Wait for Closed Search Indexing
         run: |
           node tests/integration/workflow.mjs verify
           node tests/integration/workflow.mjs wait
@@ -138,7 +156,7 @@ jobs:
           EXPECTED_STATUS: updated
           EXPECTED_PHASE: closed-update
           EXPECTED_STATE: closed
-      - name: Reopen existing issue
+      - name: Reopen Existing Issue
         id: reopen
         uses: ./
         with:
@@ -148,7 +166,7 @@ jobs:
           reopen_existing: 'true'
         env:
           INTEGRATION_PHASE: reopened
-      - name: Verify reopened issue
+      - name: Verify Reopened Issue
         run: node tests/integration/workflow.mjs verify
         env:
           ISSUE_NUMBER: ${{ steps.reopen.outputs.number }}
@@ -157,7 +175,7 @@ jobs:
           ORIGINAL_NUMBER: ${{ steps.create.outputs.number }}
           EXPECTED_STATUS: updated
           EXPECTED_PHASE: reopened
-      - name: Create using scalar metadata and workflow input overrides
+      - name: Create Using Scalar Metadata and Workflow Input Overrides
         id: inputs
         uses: ./
         with:
@@ -166,7 +184,7 @@ jobs:
           milestone: ${{ env.INTEGRATION_MILESTONE }}
         env:
           INTEGRATION_PHASE: inputs
-      - name: Verify scalar metadata and input precedence
+      - name: Verify Scalar Metadata and Input Precedence
         run: node tests/integration/workflow.mjs verify
         env:
           ISSUE_NUMBER: ${{ steps.inputs.outputs.number }}
@@ -175,25 +193,25 @@ jobs:
           EXPECTED_STATUS: created
           EXPECTED_PHASE: inputs
           EXPECTED_LABELS: two
-      - name: Reject invalid front matter
+      - name: Reject Invalid Front Matter
         id: invalid
         continue-on-error: true
         uses: ./
         with:
           filename: tests/integration/invalid-front-matter.md
-      - name: Reject a missing workspace include
+      - name: Reject a Missing Workspace Include
         id: missing
         continue-on-error: true
         uses: ./
         with:
           filename: tests/integration/missing-include.md
-      - name: Reject invalid workflow inputs
+      - name: Reject Invalid Workflow Inputs
         id: invalid_input
         continue-on-error: true
         uses: ./
         with:
           update_existing: invalid
-      - name: Verify expected failures and absence of duplicate mutations
+      - name: Verify Expected Failures and Absence of Duplicate Mutations
         run: |
           node --input-type=module <<'NODE'
           import assert from 'node:assert/strict'
@@ -210,7 +228,7 @@ jobs:
           MISSING_NUMBER: ${{ steps.missing.outputs.number }}
           INVALID_INPUT_OUTCOME: ${{ steps.invalid_input.outcome }}
           INVALID_INPUT_NUMBER: ${{ steps.invalid_input.outputs.number }}
-      - name: Close integration issues even after failure
+      - name: Close Integration Issues Even After Failure
         if: always() && (steps.prepare.outcome == 'success' || steps.prepare.outcome == 'failure' || steps.prepare.outcome == 'cancelled')
         run: node tests/integration/workflow.mjs cleanup
         env:

@@ -43,7 +43,7 @@ npm test -- --runInBand tests/existing-issues.test.ts
 
 Keep `package-lock.json` synchronized with dependency changes. Do not commit generated `dist/`, coverage output, or `node_modules/`. Documentation-only changes do not require tests.
 
-CI runs the offline suite on pull requests and pushes to `main`; check the [Node CI workflow](.github/workflows/ci.yml) for the current configuration.
+CI runs the offline suite on pull requests and pushes to `main`; check the [Test workflow](.github/workflows/test.yml) for the current configuration.
 
 ### Live integration tests
 

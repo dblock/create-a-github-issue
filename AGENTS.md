@@ -23,7 +23,7 @@ Propagate operation errors to the entry point, retaining useful context and orig
 
 Keep TypeScript below 7 when updating dependencies, because ts-jest does not support TypeScript 7 yet.
 
-Add focused regression tests for behavior changes. Unit tests must not contact GitHub or upload workspace files; mock API calls or the HTTP transport. Keep real-Octokit coverage for pagination and retries. The explicitly live CI job in `.github/workflows/ci.yml` is the exception: it builds this checkout and exercises disposable issues using `tests/integration/`. Its helper tests run offline with `node --test tests/integration/workflow.test.mjs`.
+Add focused regression tests for behavior changes. Unit tests must not contact GitHub or upload workspace files; mock API calls or the HTTP transport. Keep real-Octokit coverage for pagination and retries. The explicitly live CI job in `.github/workflows/test.yml` is the exception: it builds this checkout and exercises disposable issues using `tests/integration/`. Its helper tests run offline with `node --test tests/integration/workflow.test.mjs`.
 
 ## Validation
 
