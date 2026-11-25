@@ -26,7 +26,7 @@ Keep TypeScript below 7 when updating dependencies, because ts-jest does not sup
 
 Add focused regression tests for behavior changes. Unit tests must not contact GitHub or upload workspace files; mock API calls or the HTTP transport. Keep real-Octokit coverage for pagination and retries. The explicitly live CI job in `.github/workflows/test.yml` is the exception: it builds this checkout and exercises disposable issues using `tests/integration/`. Its helper tests run offline with `node --test tests/integration/workflow.test.mjs`.
 
-The Publish workflow commits `action.yml` and every file in `dist/`, including `ncc` chunks such as the dynamically imported `apache-arrow` code from `@azure/storage-blob`, with `scripts/publish-release.mjs`; its offline tests are in `tests/release/`. Unit tests mock `@actions/artifact`; suites that mock `@actions/core` themselves must also mock it.
+Releases use [npm-package-release](https://github.com/dblock/npm-package-release), configured in `npr.config.js` and dispatched with `.github/workflows/release.yml`; see `RELEASING.md`. Its `GitHubAction` project adds every file in `dist/`, including `ncc` chunks such as the dynamically imported `apache-arrow` code from `@azure/storage-blob`, to a build commit tagged `vX.Y.Z` that is never on `main`. Keep `dist/` ignored, keep the `npm-package-release` development dependency and the reusable workflow tag in `release.yml` on the same version, and keep `npm test` and `npm run lint` offline, since release validation runs them. Unit tests mock `@actions/artifact`; suites that mock `@actions/core` themselves must also mock it.
 
 ## Validation
 

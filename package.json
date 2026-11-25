@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dblock/create-a-github-issue.git"
+  },
   "scripts": {
     "start": "npx ncc run ./src/index.ts",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
@@ -41,6 +45,7 @@
     "eslint-plugin-prose-spellcheck": "^0.1.2",
     "globals": "^17.14.0",
     "jest": "30.5.2",
+    "npm-package-release": "0.3.0",
     "ts-jest": "29.4.15",
     "typescript": "6.0.3",
     "typescript-eslint": "^8.74.0"

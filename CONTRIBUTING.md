@@ -60,10 +60,8 @@ Organization issue types are excluded because this repository is user-owned. Cro
 Run the integration helper tests offline with:
 
 ```sh
-node --test tests/integration/workflow.test.mjs tests/release/publish-release.test.mjs
+node --test tests/integration/workflow.test.mjs
 ```
-
-The second file tests `scripts/publish-release.mjs`, which the Publish workflow uses to commit the built action and move release tags.
 
 Do not run live helper commands locally unless you intend to modify real issues.
 

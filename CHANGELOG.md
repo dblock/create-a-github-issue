@@ -5,6 +5,7 @@
 * [#253](https://github.com/dblock/create-a-github-issue/pull/253): Lint TypeScript, JavaScript, and Markdown with ESLint in a Lint workflow, and clean up documentation - [@dblock](https://github.com/dblock).
 * [#258](https://github.com/dblock/create-a-github-issue/pull/258): Speed up CI by cancelling superseded pull request runs, setting job timeouts, and caching npm downloads - [@dblock](https://github.com/dblock).
 * [#9](https://github.com/dblock/create-a-github-issue/issues/9): Upload workspace files matching the attachments input as a workflow artifact and expose its link and file list to templates, and publish every built file in releases - [@dblock](https://github.com/dblock).
+* [#302](https://github.com/dblock/create-a-github-issue/pull/302): Release with npm-package-release from a manually dispatched Release workflow that tags a build commit containing `dist/` and moves the `vX.Y` and `vX` tags, replacing the Publish workflow - [@dblock](https://github.com/dblock).
 * Your contribution here.
 
 ### 3.5.0 (2026/10/19)
