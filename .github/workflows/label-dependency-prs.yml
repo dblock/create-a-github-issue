@@ -9,10 +9,7 @@ permissions:
 
 jobs:
   add-skip-changelog:
-    if: |
-      github.event.pull_request.user.login == 'dependabot[bot]' ||
-      github.event.pull_request.user.login == 'renovate[bot]' ||
-      startsWith(github.event.pull_request.head.ref, 'renovate/')
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v9
