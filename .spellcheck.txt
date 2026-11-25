@@ -5,6 +5,7 @@ github
 js
 lifecycle
 md
+mjs
 Nunjucks
 pkwarren
 stefanvanburen

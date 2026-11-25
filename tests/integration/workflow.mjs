@@ -61,7 +61,31 @@ export async function cleanup(octokit, repository, key, knownNumbers = []) {
   }
 }
 
-export function verify(issue, env) {
+export function attachmentsArtifactName(key) {
+  return `action-integration-${key}`
+}
+
+export function findAttachmentsArtifact(artifacts, key) {
+  const matches = artifacts.filter(artifact => artifact.name === attachmentsArtifactName(key))
+  assert.equal(matches.length, 1, `Expected one ${attachmentsArtifactName(key)} artifact on this run`)
+  assert.ok(matches[0].size_in_bytes > 0, 'The attachments artifact is empty')
+  return matches[0]
+}
+
+// The run artifact listing can lag briefly behind a completed upload.
+export async function waitForArtifact(octokit, repository, runId, key, sleep = setTimeout) {
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const artifacts = await octokit.paginate(octokit.rest.actions.listWorkflowRunArtifacts, {
+      ...repository, run_id: runId, name: attachmentsArtifactName(key), per_page: 100
+    })
+    if (artifacts.some(artifact => artifact.name === attachmentsArtifactName(key))) return findAttachmentsArtifact(artifacts, key)
+    if (attempt < 11) await sleep(5000)
+  }
+  throw new Error(`Artifact ${attachmentsArtifactName(key)} was not listed on run ${runId} within the polling deadline`)
+}
+
+// Pass the run's attachments artifact to expect the lines rendered by tests/integration/attachments-issue.md.
+export function verify(issue, env, artifact) {
   const { title, marker } = identity(env.INTEGRATION_KEY)
   assert.match(env.ISSUE_NUMBER || '', /^[1-9]\d*$/, 'Missing issue number output')
   assert.equal(String(issue.number), env.ISSUE_NUMBER)
@@ -87,7 +111,13 @@ export function verify(issue, env) {
     'Literal: {{ not_a_variable }}',
     '# Generated report',
     'All checks passed.',
-    'Nested report details.'
+    'Nested report details.',
+    ...(artifact ? [
+      '',
+      `Attachments: [${artifact.name}](${env.GITHUB_SERVER_URL}/${env.GITHUB_REPOSITORY}/actions/runs/${env.GITHUB_RUN_ID}/artifacts/${artifact.id})`,
+      '- tests/integration/generated-details.md',
+      '- tests/integration/generated-report.md'
+    ] : [])
   ].join('\n'))
 }
 
@@ -98,7 +128,7 @@ async function main(command) {
   const repository = { owner, repo }
   const octokit = getOctokit(process.env.GITHUB_TOKEN)
   if (command === 'cleanup') return cleanup(octokit, repository, key, [
-    process.env.CREATED_NUMBER, process.env.INPUTS_NUMBER
+    process.env.CREATED_NUMBER, process.env.INPUTS_NUMBER, process.env.ATTACHMENTS_NUMBER
   ])
   if (command === 'prepare') {
     await writeFile('tests/integration/generated-report.md', '# Generated report\nAll checks passed.\n{% include "./generated-details.md" %}')
@@ -146,6 +176,10 @@ async function main(command) {
   assert.equal(issue.title, title)
   assert.ok(issue.body?.includes(marker), 'Refusing to operate on an unrelated issue')
   if (command === 'verify') return verify(issue, process.env)
+  if (command === 'verify-attachments') {
+    const artifact = await waitForArtifact(octokit, repository, Number(process.env.GITHUB_RUN_ID), key)
+    return verify(issue, process.env, artifact)
+  }
   if (command === 'close') {
     await octokit.rest.issues.update({ ...repository, issue_number, state: 'closed' })
     const { data } = await octokit.rest.issues.get({ ...repository, issue_number })

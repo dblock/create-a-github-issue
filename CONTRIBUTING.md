@@ -49,9 +49,9 @@ CI runs the offline suite on pull requests and pushes to `main`; check the [Test
 
 ### Live Integration Tests
 
-The live integration workflow introduced in [#210](https://github.com/dblock/create-a-github-issue/pull/210) builds the checked-out action and runs it with `uses: ./` after offline checks pass. It exercises create-on-no-match, find-without-update, open/closed/all searches, closed updates without reopening, reopening, and unconditional creation. It verifies number/URL/status outputs, special-character titles, list/scalar metadata, assignee/milestone input precedence, labels, dates, filters, literal template delimiters, and generated nested workspace includes. Expected-failure steps cover invalid front matter, invalid workflow inputs, and missing includes. Search indexing is polled for up to approximately 150 seconds before open/closed matching.
+The live integration workflow introduced in [#210](https://github.com/dblock/create-a-github-issue/pull/210) builds the checked-out action and runs it with `uses: ./` after offline checks pass. It exercises create-on-no-match, find-without-update, open/closed/all searches, closed updates without reopening, reopening, workflow artifact attachments, and unconditional creation. It verifies number/URL/status outputs, special-character titles, list/scalar metadata, assignee/milestone input precedence, labels, dates, filters, literal template delimiters, and generated nested workspace includes. Expected-failure steps cover invalid front matter, invalid workflow inputs, and missing includes. Search indexing is polled for up to approximately 150 seconds before open/closed matching.
 
-The live job uses job-scoped `contents: read` and `issues: write` permissions with the workflow token. It runs on `main` pushes, same-repository PRs other than Dependabot runs, and manual `workflow_dispatch` runs. Fork and Dependabot PRs receive offline checks only, with live coverage after merging. It does not use `pull_request_target` or personal tokens.
+The live job uses job-scoped `actions: read` (to verify the attachments artifact), `contents: read`, and `issues: write` permissions with the workflow token. It runs on `main` pushes, same-repository PRs other than Dependabot runs, and manual `workflow_dispatch` runs. Fork and Dependabot PRs receive offline checks only, with live coverage after merging. It does not use `pull_request_target` or personal tokens.
 
 Cleanup runs even after setup failures, closes matching test issues, retains the `action-integration` label, and deletes run-specific labels and milestones. It discovers resources through action outputs and unique run ID/attempt names and body markers without relying on search indexing. Closed issues remain searchable by `label:action-integration` as an audit trail and link to their workflow run. Forced runner termination or GitHub outages may prevent cleanup; clean up that run's resources manually if needed.
 
@@ -60,8 +60,10 @@ Organization issue types are excluded because this repository is user-owned. Cro
 Run the integration helper tests offline with:
 
 ```sh
-node --test tests/integration/workflow.test.mjs
+node --test tests/integration/workflow.test.mjs tests/release/publish-release.test.mjs
 ```
+
+The second file tests `scripts/publish-release.mjs`, which the Publish workflow uses to commit the built action and move release tags.
 
 Do not run live helper commands locally unless you intend to modify real issues.
 

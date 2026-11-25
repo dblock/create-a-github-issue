@@ -38,8 +38,8 @@ jobs:
         run: npm ci
       - name: Run Tests with Coverage
         run: npm test
-      - name: Run Integration Helper Tests
-        run: node --test tests/integration/workflow.test.mjs
+      - name: Run Integration and Release Helper Tests
+        run: node --test tests/integration/workflow.test.mjs tests/release/publish-release.test.mjs
       - name: Upload Coverage to Codecov
         if: matrix.entry.coverage
         uses: codecov/codecov-action@v7
@@ -59,6 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
+      actions: read
       contents: read
       issues: write
     env:
@@ -182,6 +183,29 @@ jobs:
           ORIGINAL_NUMBER: ${{ steps.create.outputs.number }}
           EXPECTED_STATUS: updated
           EXPECTED_PHASE: reopened
+      - name: Update Existing Issue with Attachments
+        id: attachments
+        uses: ./
+        with:
+          filename: tests/integration/attachments-issue.md
+          update_existing: 'true'
+          # The search index may still list the just-reopened issue as closed.
+          search_existing: all
+          attachments: |
+            tests/integration/generated-report.md
+            tests/integration/generated-details.md
+          attachments_name: action-integration-${{ env.INTEGRATION_KEY }}
+        env:
+          INTEGRATION_PHASE: attachments
+      - name: Verify Attachments Artifact Link
+        run: node tests/integration/workflow.mjs verify-attachments
+        env:
+          ISSUE_NUMBER: ${{ steps.attachments.outputs.number }}
+          ISSUE_URL: ${{ steps.attachments.outputs.url }}
+          ISSUE_STATUS: ${{ steps.attachments.outputs.status }}
+          ORIGINAL_NUMBER: ${{ steps.create.outputs.number }}
+          EXPECTED_STATUS: updated
+          EXPECTED_PHASE: attachments
       - name: Create Using Scalar Metadata and Workflow Input Overrides
         id: inputs
         uses: ./
@@ -241,3 +265,4 @@ jobs:
         env:
           CREATED_NUMBER: ${{ steps.create.outputs.number }}
           INPUTS_NUMBER: ${{ steps.inputs.outputs.number }}
+          ATTACHMENTS_NUMBER: ${{ steps.attachments.outputs.number }}

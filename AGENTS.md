@@ -9,6 +9,7 @@ This is a TypeScript ESM GitHub Action running on Node.js 24. See `CONTRIBUTING.
 - `src/index.ts`: action entry point and failure reporting.
 - `src/action.ts`: workflow inputs, template rendering, and issue orchestration.
 - `src/issues.ts`: exact-title duplicate searches and completeness safeguards.
+- `src/attachments.ts`: workspace file matching and workflow artifact uploads for the `attachments` input.
 - `src/helpers.ts`: front matter validation, input parsing, and outputs.
 - `tests/`: Jest tests and template fixtures. `tests/action-setup.ts` shares mocked action setup; search and rate-limit suites exercise the real Octokit client with mocked HTTP transport.
 - `action.yml`: public action metadata and inputs.
@@ -19,11 +20,13 @@ Keep changes focused and preserve existing defaults. Update `README.md` and `act
 
 Preserve the distinction between omitted `update_existing` and explicit `false`. Keep exact-title search safeguards and publish outputs only after issue operations succeed. Labels and assignees support comma-separated strings.
 
-Propagate operation errors to the entry point, retaining useful context and original API error details. Validate front matter before API requests. Follow the existing TypeScript style and avoid weakening types with `any` or unchecked casts.
+Propagate operation errors to the entry point, retaining useful context and original API error details. Validate front matter before API requests and artifact uploads. Follow the existing TypeScript style and avoid weakening types with `any` or unchecked casts.
 
 Keep TypeScript below 7 when updating dependencies, because ts-jest does not support TypeScript 7 yet. Keep `@types/node` on the major version of the action runtime (`runs.using` in `action.yml`, currently Node 24), so code cannot use APIs the runtime lacks.
 
 Add focused regression tests for behavior changes. Unit tests must not contact GitHub or upload workspace files; mock API calls or the HTTP transport. Keep real-Octokit coverage for pagination and retries. The explicitly live CI job in `.github/workflows/test.yml` is the exception: it builds this checkout and exercises disposable issues using `tests/integration/`. Its helper tests run offline with `node --test tests/integration/workflow.test.mjs`.
+
+The Publish workflow commits `action.yml` and every file in `dist/`, including `ncc` chunks such as the dynamically imported `apache-arrow` code from `@azure/storage-blob`, with `scripts/publish-release.mjs`; its offline tests are in `tests/release/`. Unit tests mock `@actions/artifact`; suites that mock `@actions/core` themselves must also mock it.
 
 ## Validation
 

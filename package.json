@@ -16,8 +16,10 @@
   "author": "Jason Etcovitch <jasonetco@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@actions/artifact": "^6.3.1",
     "@actions/core": "3.0",
     "@actions/github": "^9.0.0",
+    "@actions/glob": "^0.7.0",
     "@octokit/plugin-throttling": "^11.0.5",
     "front-matter": "4.0.2",
     "nunjucks": "3.2.4",

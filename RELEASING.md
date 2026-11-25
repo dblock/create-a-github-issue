@@ -28,7 +28,7 @@ git tag v3.1.0
 git push origin main --tags
 ```
 
-Create [a new release on GitHub](https://github.com/dblock/create-a-github-issue/releases/new) from a tag. This will trigger [a release publish workflow](.github/workflows/publish.yml) and make the release.
+Create [a new release on GitHub](https://github.com/dblock/create-a-github-issue/releases/new) from a tag. This will trigger [a release publish workflow](.github/workflows/publish.yml), which builds the action, commits `action.yml` and all of `dist/` on top of the release commit with [publish-release.mjs](scripts/publish-release.mjs), and moves the release tag and its `vX.Y` and `vX` tags to that commit (only the release tag for drafts and prereleases).
 
 ## Prepare for the Next Development Iteration
 

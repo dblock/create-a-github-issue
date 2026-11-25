@@ -4,6 +4,8 @@ const mockReadFile = jest.fn<() => Promise<string>>()
 const mockGetOctokit = jest.fn()
 
 jest.unstable_mockModule('fs/promises', () => ({ readFile: mockReadFile }))
+// These tests do not use attachments; keep the artifact client out of the module graph.
+jest.unstable_mockModule('@actions/artifact', () => ({ DefaultArtifactClient: class {} }))
 jest.unstable_mockModule('@actions/core', () => ({
   getInput: () => '',
   debug: jest.fn(),

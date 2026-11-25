@@ -13,6 +13,8 @@ jest.unstable_mockModule('undici', () => ({
   fetch: mockFetch
 }))
 
+// These tests do not use attachments; keep the artifact client out of the module graph.
+jest.unstable_mockModule('@actions/artifact', () => ({ DefaultArtifactClient: class {} }))
 jest.unstable_mockModule('@actions/core', () => ({
   getInput: (name: string) => inputs[name] || '',
   debug: jest.fn(),

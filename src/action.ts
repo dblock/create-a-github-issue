@@ -8,6 +8,7 @@ import nunjucks from 'nunjucks'
 // @ts-expect-error nunjucks-date-filter ships no type declarations.
 import dateFilter from 'nunjucks-date-filter'
 import { IssueStatus, listToArray, readBooleanInput, setOutputs, validateFrontMatter } from './helpers'
+import { uploadAttachments } from './attachments'
 import { findExistingIssue } from './issues'
 
 function retryRateLimit(retryAfter: number, _options: unknown, _octokit: unknown, retryCount: number) {
@@ -47,13 +48,6 @@ export async function createAnIssue () {
   const env = nunjucks.configure(workspace, { autoescape: false })
   env.addFilter('date', dateFilter)
 
-  const templateVariables = {
-    ...context,
-    repo: context.repo,
-    env: process.env,
-    date: Date.now()
-  }
-
   // Get the file
   const templatePath = path.join(workspace, template)
   core.debug(`Reading from file ${templatePath}`)
@@ -63,6 +57,17 @@ export async function createAnIssue () {
   const { attributes, body } = fm<unknown>(file)
   validateFrontMatter(attributes, template)
   core.info(`Front matter for ${template} is ${JSON.stringify(attributes)}`)
+
+  // Upload attachments before rendering so templates can link to the artifact.
+  const attachments = await uploadAttachments(core.getInput('attachments'), core.getInput('attachments_name'), workspace)
+
+  const templateVariables = {
+    ...context,
+    repo: context.repo,
+    env: process.env,
+    date: Date.now(),
+    attachments
+  }
 
   const templated = {
     body: env.renderString(body, templateVariables),
