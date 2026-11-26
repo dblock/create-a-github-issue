@@ -1,3 +1,7 @@
+### 3.5.2 (Next)
+
+* Your contribution here.
+
 ### 3.5.1 (2026/11/26)
 
 * [#247](https://github.com/dblock/create-a-github-issue/pull/247): Remove Renovate configuration and Renovate-specific workflow conditions - [@dblock](https://github.com/dblock).
